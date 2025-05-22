@@ -1,9 +1,0 @@
-{
-  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-  "name": "status-page",
-  "short_name": "Status Page",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#1e4162",
-  "description": "Upayan's Status Page"
-}

@@ -1,5 +1,8 @@
 services:
-  backend:
+  web:
     image: ghcr.io/upayanmazumder/status-page:latest
     ports:
-      - 3200:3000
+      - "3000:3000"
+      - "5000:5000"
+    env_file:
+      - .env

@@ -1,0 +1,22 @@
+{
+  "name": "status-page",
+  "version": "2.0.0",
+  "description": "",
+  "scripts": {
+    "dev:api": "cd api && npm run dev",
+    "dev:app": "cd app && npm run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:app\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upayanmazumder/Status-Page.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/upayanmazumder/Status-Page/issues"
+  },
+  "homepage": "https://github.com/upayanmazumder/Status-Page#readme"
+}
