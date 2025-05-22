@@ -51,6 +51,17 @@ export default function LoginPage() {
       >
         Login
       </button>
+
+      <p className="mt-4 text-center text-gray-400">
+        Don&apos;t have an account?{" "}
+        <button
+          type="button"
+          className="text-indigo-400 hover:underline"
+          onClick={() => (window.location.href = "/auth/register")}
+        >
+          Register
+        </button>
+      </p>
     </form>
   );
 }
