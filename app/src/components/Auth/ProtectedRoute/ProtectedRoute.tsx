@@ -13,7 +13,7 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) router.push("/auth/login");
+    if (!user) router.push("/auth");
   }, [user, router]);
 
   return user ? <>{children}</> : null;
