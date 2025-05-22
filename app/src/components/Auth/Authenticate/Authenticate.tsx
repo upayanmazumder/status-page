@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useAuth } from "../AuthProvider/AuthProvider";
-import axios from "../../../utils/api";
+import axios, { baseURL } from "../../../utils/api";
 import type { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
@@ -21,10 +21,7 @@ export default function AuthenticatePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = () => {
-    const apiBase =
-      process.env.NEXT_PUBLIC_ENV === "production"
-        ? "https://api.status-page.upayan.dev"
-        : "http://localhost:5000";
+    const apiBase = baseURL;
     window.location.href = `${apiBase}/auth/google`;
   };
 
