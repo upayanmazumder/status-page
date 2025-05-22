@@ -13,8 +13,14 @@ export const register = async (req: Request, res: Response) => {
 
   try {
     const userExists = await User.findOne({ email });
-    if (userExists)
+    if (userExists) {
+      if (userExists.googleId && !userExists.password) {
+        return res.status(400).json({
+          message: "Email registered via Google. Please sign in with Google.",
+        });
+      }
       return res.status(400).json({ message: "Email already registered" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ email, password: hashedPassword });
@@ -37,8 +43,19 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user || !user.password)
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (user.googleId && !user.password) {
+      return res.status(400).json({
+        message: "Email registered via Google. Please sign in with Google.",
+      });
+    }
+
+    if (!user.password) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
