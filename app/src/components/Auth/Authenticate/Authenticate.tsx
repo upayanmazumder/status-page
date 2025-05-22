@@ -21,7 +21,10 @@ export default function AuthenticatePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXTAUTH_URL}/auth/google`;
+    // Use NEXT_PUBLIC_NEXTAUTH_URL for client-side access, fallback to window.location.origin
+    const baseUrl =
+      process.env.NEXT_PUBLIC_NEXTAUTH_URL || window.location.origin;
+    window.location.href = `${baseUrl}/auth/google`;
   };
 
   const handleLoginSubmit = async (e: FormEvent) => {
