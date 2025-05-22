@@ -1,12 +1,9 @@
-import ProtectedRoute from "@/components/ProtectedRoute";
+import Dashboard from "../../components/Dashboard/Dashboard";
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
-      <div>
-        <h1>Dashboard</h1>
-        <p>Only visible to authenticated users</p>
-      </div>
-    </ProtectedRoute>
+    <main>
+      <Dashboard />
+    </main>
   );
 }
