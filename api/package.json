@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.2.0",
     "passport": "^0.6.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -33,6 +34,7 @@
     "@types/node": "^20.1.1",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
+    "@types/serve-favicon": "^2.5.7",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"

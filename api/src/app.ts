@@ -1,5 +1,6 @@
 import path from "path";
 import dotenv from "dotenv";
+import favicon from "serve-favicon";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -10,6 +11,8 @@ import authRoutes from "./routes/authRoutes";
 import session from "express-session";
 
 const app = express();
+
+app.use(favicon(path.join(__dirname, "../public", "favicon.ico")));
 
 app.use(cors());
 app.use(express.json());
