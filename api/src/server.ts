@@ -1,26 +1,26 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import session from 'express-session';
-import passport from 'passport';
-import cors from 'cors';
-import authRoutes from './routes/auth';
-import userRoutes from './routes/user';
-import './config/passport';
+import path from "path";
+import dotenv from "dotenv";
 
-dotenv.config({ path: require('path').resolve(__dirname, '../../.env') });
+// Load .env from project root (two levels up from src/)
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-const app = express();
+import mongoose from "mongoose";
+import app from "./app";
 
-mongoose.connect(process.env.MONGO_URI!).then(() => console.log('Mongo connected'));
+const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.NEXTAUTH_URL, credentials: true }));
-app.use(express.json());
-app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
+async function startServer() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI!);
+        console.log("MongoDB connected");
 
-app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error(err);
+        process.exit(1);
+    }
+}
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+startServer();

@@ -1,37 +1,19 @@
-import mongoose, { Schema, model, Document, Types } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
-    name: string;
     email: string;
-    username: string;
-    password?: string;
-    image?: string;
-    provider: 'local' | 'google';
-    id: string;
+    password?: string; // Optional because OAuth users might not have password
+    googleId?: string;
+    createdAt: Date;
 }
 
-const userSchema = new Schema<IUser>(
+const UserSchema = new Schema<IUser>(
     {
-        name: String,
-        email: { type: String, unique: true, required: true },
-        username: { type: String, unique: true, required: true },
+        email: { type: String, required: true, unique: true },
         password: { type: String },
-        image: String,
-        provider: {
-            type: String,
-            enum: ['local', 'google'],
-            default: 'local',
-        },
+        googleId: { type: String },
     },
     { timestamps: true }
 );
 
-userSchema.virtual('id').get(function (this: IUser) {
-    return (this._id as Types.ObjectId).toHexString();
-});
-
-userSchema.set('toJSON', {
-    virtuals: true,
-});
-
-export default model<IUser>('User', userSchema);
+export const User = mongoose.model<IUser>("User", UserSchema);
