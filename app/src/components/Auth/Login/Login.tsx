@@ -21,19 +21,36 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
+    >
+      <h2 className="text-3xl font-semibold text-white mb-6 text-center">
+        Login
+      </h2>
+
       <input
+        type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
+        className="w-full mb-4 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        required
       />
       <input
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
-        type="password"
+        className="w-full mb-6 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        required
       />
-      <button type="submit">Login</button>
+      <button
+        type="submit"
+        className="w-full py-3 bg-indigo-600 rounded text-white font-semibold hover:bg-indigo-700 transition"
+      >
+        Login
+      </button>
     </form>
   );
 }
