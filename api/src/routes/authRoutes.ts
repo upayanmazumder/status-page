@@ -22,7 +22,11 @@ router.get(
       expiresIn: "1d",
     });
 
-    res.json({ token });
+    res.redirect(
+      `${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/auth/oauth-success?token=${token}`
+    );
   }
 );
 

@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { useAuth } from "../AuthProvider/AuthProvider";
 import axios from "../../../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
 export default function AuthenticatePage() {
   const { login } = useAuth();
@@ -17,6 +17,14 @@ export default function AuthenticatePage() {
     username: "",
     password: "",
   });
+
+  // Google OAuth2 handler
+  const handleGoogleLogin = () => {
+    window.location.href =
+      process.env.NEXT_PUBLIC_ENV === "production"
+        ? "https://api.status-page.upayan.dev/auth/google"
+        : "http://localhost:5000/auth/google";
+  };
 
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -63,6 +71,15 @@ export default function AuthenticatePage() {
           </button>
         ))}
       </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="w-full flex items-center justify-center gap-2 py-3 mb-6 bg-white text-gray-800 rounded font-semibold hover:bg-gray-100 transition"
+      >
+        <FaGoogle className="text-red-500" />
+        Continue with Google
+      </button>
 
       <AnimatePresence mode="wait">
         {activeTab === "login" ? (
