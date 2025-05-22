@@ -33,6 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const logout = useCallback(() => {
@@ -42,15 +43,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [router]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode<JwtPayload>(token);
-        setUser({ id: decoded.id, email: decoded.email });
+
+        if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+          logout();
+        } else {
+          setUser({ id: decoded.id, email: decoded.email });
+        }
       } catch {
         logout();
       }
     }
+    setLoading(false);
   }, [logout]);
 
   const login = (token: string) => {
@@ -62,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
