@@ -43,6 +43,6 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker build . \
-            --tag ghcr.io/upayanmazumder/scamzap:${{ env.TAG }} \
+            --tag ghcr.io/upayanmazumder/status-page:${{ env.TAG }} \
             --build-arg NODE_ENV=production
-          docker push ghcr.io/upayanmazumder/scamzap:${{ env.TAG }}
+          docker push ghcr.io/upayanmazumder/status-page:${{ env.TAG }}
