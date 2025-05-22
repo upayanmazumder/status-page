@@ -21,7 +21,11 @@ export default function AuthenticatePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXTAUTH_URL}/auth/google`;
+    const apiBase =
+      process.env.NEXT_PUBLIC_ENV === "production"
+        ? "https://api.status-page.upayan.dev"
+        : "http://localhost:5000";
+    window.location.href = `${apiBase}/auth/google`;
   };
 
   const handleLoginSubmit = async (e: FormEvent) => {
