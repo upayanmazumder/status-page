@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useAuth } from "../AuthProvider/AuthProvider";
 import axios from "../../../utils/api";
+import type { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
@@ -17,31 +18,41 @@ export default function AuthenticatePage() {
     username: "",
     password: "",
   });
+  const [error, setError] = useState<string | null>(null);
 
-  // Google OAuth2 handler
   const handleGoogleLogin = () => {
     window.location.href = `${process.env.NEXTAUTH_URL}/auth/google`;
   };
 
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
       const res = await axios.post("/auth/login", loginData);
       login(res.data.token);
-    } catch (err) {
-      alert("Login failed");
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message: string }>;
+      setError(
+        error?.response?.data?.message ||
+          "Login failed. Please check your credentials and try again."
+      );
+      console.error(error);
     }
   };
 
   const handleRegisterSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
       await axios.post("/auth/register", registerData);
       setActiveTab("login");
-    } catch (err) {
-      alert("Registration failed");
-      console.error(err);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message: string }>;
+      setError(
+        error?.response?.data?.message ||
+          "Registration failed. Please check your details and try again."
+      );
+      console.error(error);
     }
   };
 
@@ -53,6 +64,11 @@ export default function AuthenticatePage() {
 
   return (
     <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-lg mx-auto">
+      {error && (
+        <div className="mb-4 p-3 bg-red-600 text-white rounded text-center">
+          {error}
+        </div>
+      )}
       <div className="flex justify-around mb-6 border-b border-gray-700">
         {["login", "register"].map((tab) => (
           <button
@@ -62,7 +78,10 @@ export default function AuthenticatePage() {
                 ? "text-indigo-400 border-b-2 border-indigo-400"
                 : "text-gray-400 hover:text-indigo-300"
             }`}
-            onClick={() => setActiveTab(tab as "login" | "register")}
+            onClick={() => {
+              setActiveTab(tab as "login" | "register");
+              setError(null);
+            }}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
