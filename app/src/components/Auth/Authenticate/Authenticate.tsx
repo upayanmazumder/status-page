@@ -20,10 +20,7 @@ export default function AuthenticatePage() {
 
   // Google OAuth2 handler
   const handleGoogleLogin = () => {
-    window.location.href =
-      process.env.NEXT_PUBLIC_ENV === "production"
-        ? "https://api.status-page.upayan.dev/auth/google"
-        : "http://localhost:5000/auth/google";
+    window.location.href = `${process.env.NEXTAUTH_URL}/auth/google`;
   };
 
   const handleLoginSubmit = async (e: FormEvent) => {
