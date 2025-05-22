@@ -19,5 +19,5 @@ export default function OAuthSuccessPage() {
     }
   }, [login, router, token]);
 
-  return <div>Signing you in...</div>;
+  return <main>Signing you in...</main>;
 }
