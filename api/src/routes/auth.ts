@@ -72,7 +72,7 @@ router.get(
             { expiresIn: '7d' }
         );
 
-        res.redirect(`${process.env.CLIENT_URL}/auth/success?token=${token}`);
+        res.redirect(`${process.env.NEXTAUTH_URL}/auth/success?token=${token}`);
     }
 );
 

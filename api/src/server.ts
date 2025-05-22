@@ -14,7 +14,7 @@ const app = express();
 
 mongoose.connect(process.env.MONGO_URI!).then(() => console.log('Mongo connected'));
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors({ origin: process.env.NEXTAUTH_URL, credentials: true }));
 app.use(express.json());
 app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
