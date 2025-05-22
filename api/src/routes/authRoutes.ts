@@ -2,6 +2,10 @@ import express from "express";
 import passport from "../utils/passport";
 import { login, register } from "../controllers/authController";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const router = express.Router();
 
@@ -23,9 +27,7 @@ router.get(
     });
 
     res.redirect(
-      `${
-        process.env.FRONTEND_URL || "http://localhost:3000"
-      }/auth/oauth-success?token=${token}`
+      `${process.env.FRONTEND_URL}/auth/oauth-success?token=${token}`
     );
   }
 );
