@@ -27,10 +27,10 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/auth", authRoutes);
-
 app.get("/", (req, res) => {
-  res.send("API is running");
+  res.json({ message: "API is running" });
 });
+
+app.use("/auth", authRoutes);
 
 export default app;
