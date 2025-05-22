@@ -15,6 +15,7 @@ async function startServer() {
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Backend URL: ${process.env.NEXTAUTH_URL}`);
     });
   } catch (err) {
     console.error(err);
