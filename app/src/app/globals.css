@@ -112,8 +112,8 @@ body {
 
 main {
   min-height: 100vh;
-  margin: 4.5rem var(--screen-horizontal-margin) var(--margin-huge);
-  padding: var(--padding-medium);
+  margin: 0 var(--screen-horizontal-margin);
+  padding: 0 var(--padding-medium);
   display: flex;
   flex-direction: column;
   justify-content: center;

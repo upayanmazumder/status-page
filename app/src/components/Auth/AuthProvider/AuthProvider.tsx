@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     setUser(null);
-    router.push("/auth/login");
+    router.push("/auth/");
   }, [router]);
 
   useEffect(() => {

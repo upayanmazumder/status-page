@@ -47,8 +47,7 @@ export default function AuthenticatePage() {
   };
 
   return (
-    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-full ">
-      {/* Tabs */}
+    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-lg mx-auto">
       <div className="flex justify-around mb-6 border-b border-gray-700">
         {["login", "register"].map((tab) => (
           <button
