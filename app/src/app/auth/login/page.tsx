@@ -16,6 +16,7 @@ export default function LoginPage() {
       login(res.data.token);
     } catch (err) {
       alert("Login failed");
+      console.log(err);
     }
   };
 
