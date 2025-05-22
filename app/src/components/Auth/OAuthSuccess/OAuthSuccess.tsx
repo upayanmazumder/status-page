@@ -20,5 +20,16 @@ export default function OAuthSuccessPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  return <span>Signing you in...</span>;
+  return (
+    <>
+      <span>Signing you in...</span>
+
+      <p>
+        Stuck on this page?{" "}
+        <a href="/dashboard" className="text-blue-500 hover:underline">
+          Go to Dashboard
+        </a>
+      </p>
+    </>
+  );
 }
