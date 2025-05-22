@@ -1,8 +1,79 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "RedHatDisplay";
+  src: url("../../public/fonts/RedHatDisplay-VariableFont_wght.ttf")
+    format("truetype");
+}
+
+@font-face {
+  font-family: "RedHatMono";
+  src: url("../../public/fonts/RedHatMono-VariableFont_wght.ttf")
+    format("truetype");
+}
+
+@font-face {
+  font-family: "Montserrat-Regular";
+  src: url("../../public/fonts/Montserrat-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Montserrat-Bold";
+  src: url("../../public/fonts/Montserrat-Bold.ttf") format("truetype");
+}
+
 :root {
   --background: #101828;
   --foreground: #efefef;
+
+  --header-background-color: var(--background);
+  --footer-background-color: #121212bd;
+  --sidebar-background-color: #0e0e0ebb;
+  --card-background: linear-gradient(
+    145deg,
+    rgba(10, 25, 47, 0.7),
+    rgba(2, 12, 27, 0.7)
+  );
+
+  --screen-horizontal-margin: var(--margin-huge);
+  --screen-vertical-margin: 0;
+
+  --text-link-color: #1c86ee;
+  --text-link-hover-color: rgb(77, 156, 235);
+
+  --padding-tiny: 0.25rem;
+  --padding-small: 0.5rem;
+  --padding-medium: 1rem;
+  --padding-large: 2rem;
+  --padding-huge: 4rem;
+
+  --margin-tiny: 0.25rem;
+  --margin-small: 0.5rem;
+  --margin-medium: 1rem;
+  --margin-large: 2rem;
+  --margin-huge: 4rem;
+
+  --border-radius-tiny: 0.25rem;
+  --border-radius-small: 0.5rem;
+  --border-radius-medium: 1rem;
+  --border-radius-large: 2rem;
+  --border-radius-huge: 4rem;
+
+  --font-size-tiny: clamp(0.7rem, 1vw, 0.8rem);
+  --font-size-small: clamp(0.8rem, 1.2vw, 0.9rem);
+  --font-size-medium: clamp(1rem, 2vw, 1.125rem);
+  --font-size-large: clamp(1.25rem, 2.5vw, 1.5rem);
+  --font-size-huge: clamp(1.75rem, 4vw, 2rem);
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  --transition-fast: 0.2s ease-in-out;
+  --transition-medium: 0.4s ease-in-out;
+  --transition-slow: 0.8s ease-in-out;
+
+  --box-shadow-default: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 @theme inline {
@@ -12,14 +83,37 @@
   --font-mono: var(--font-geist-mono);
 }
 
+* {
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
 body {
-  background: var(--background);
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background: var(--background, rgb(15, 15, 15));
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Montserrat-Regular", "RedHatDisplay", system-ui, sans-serif;
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.6;
+  background-attachment: fixed;
+  background-size: cover;
+  scroll-padding-top: 100px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 main {
   min-height: 100vh;
+  margin: 4.5rem var(--screen-horizontal-margin) var(--margin-huge);
+  padding: var(--padding-medium);
   display: flex;
   flex-direction: column;
   justify-content: center;
