@@ -23,8 +23,7 @@ const Loader = () => {
 const StyledWrapper = styled.div`
   .card {
     /* color used to softly clip top and bottom of the .words container */
-    --bg-color: #212121;
-    background-color: var(--bg-color);
+
     padding: 1rem 2rem;
     border-radius: 1.25rem;
   }

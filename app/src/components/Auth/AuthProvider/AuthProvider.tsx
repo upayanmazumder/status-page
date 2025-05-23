@@ -10,15 +10,18 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import Loader from "../../Loader/Loader";
 
 interface User {
   id: string;
   email: string;
+  username?: string;
 }
 
 interface JwtPayload {
   id: string;
   email: string;
+  username?: string;
   exp?: number;
   iat?: number;
 }
@@ -52,7 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (decoded.exp && Date.now() >= decoded.exp * 1000) {
           logout();
         } else {
-          setUser({ id: decoded.id, email: decoded.email });
+          setUser({
+            id: decoded.id,
+            email: decoded.email,
+            username: decoded.username,
+          });
         }
       } catch {
         logout();
@@ -64,13 +71,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (token: string) => {
     localStorage.setItem("token", token);
     const decoded = jwtDecode<JwtPayload>(token);
-    setUser({ id: decoded.id, email: decoded.email });
+    setUser({
+      id: decoded.id,
+      email: decoded.email,
+      username: decoded.username,
+    });
     router.push("/dashboard");
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
-      {!loading && children}
+      {loading ? (
+        <main>
+          <Loader />
+        </main>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
