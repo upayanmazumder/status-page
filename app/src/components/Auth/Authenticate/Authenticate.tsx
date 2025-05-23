@@ -11,7 +11,6 @@ import md5 from "md5";
 export default function AuthenticatePage() {
   const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
     name: "",
@@ -27,8 +26,7 @@ export default function AuthenticatePage() {
   };
 
   const handleGoogleLogin = () => {
-    const apiBase = baseURL;
-    window.location.href = `${apiBase}/auth/google`;
+    window.location.href = `${baseURL}/auth/google`;
   };
 
   const handleLoginSubmit = async (e: FormEvent) => {
@@ -41,9 +39,8 @@ export default function AuthenticatePage() {
       const error = err as AxiosError<{ message: string }>;
       setError(
         error?.response?.data?.message ||
-          "Login failed. Please check your credentials and try again."
+          "Login failed. Please check your credentials."
       );
-      console.error(error);
     }
   };
 
@@ -61,38 +58,50 @@ export default function AuthenticatePage() {
       const error = err as AxiosError<{ message: string }>;
       setError(
         error?.response?.data?.message ||
-          "Registration failed. Please check your details and try again."
+          "Registration failed. Please try again."
       );
-      console.error(error);
     }
   };
 
   const formVariants = {
-    hidden: { opacity: 0, y: 10 },
+    hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
+    exit: { opacity: 0, y: -20 },
   };
 
+  const inputStyle =
+    "w-full pl-10 pr-4 py-3 rounded-xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+
   return (
-    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-lg mx-auto">
+    <motion.div
+      className="bg-gray-900 p-8 rounded-3xl  w-full max-w-lg mx-auto"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       {error && (
-        <div className="mb-4 p-3 bg-red-600 text-white rounded text-center">
+        <motion.div
+          className="mb-4 p-4 bg-red-600 text-white rounded-lg text-center"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+        >
           {error}
-        </div>
+        </motion.div>
       )}
-      <div className="flex justify-around mb-6 border-b border-gray-700">
+
+      <div className="flex justify-center gap-6 mb-6 border-b border-gray-700 pb-2">
         {["login", "register"].map((tab) => (
           <button
             key={tab}
-            className={`w-1/2 py-2 text-lg font-semibold transition-all duration-300 ${
-              activeTab === tab
-                ? "text-indigo-400 border-b-2 border-indigo-400"
-                : "text-gray-400 hover:text-indigo-300"
-            }`}
             onClick={() => {
               setActiveTab(tab as "login" | "register");
               setError(null);
             }}
+            className={`text-lg font-semibold pb-1 transition-all duration-300 ${
+              activeTab === tab
+                ? "text-indigo-400 border-b-2 border-indigo-400"
+                : "text-gray-400 hover:text-indigo-300"
+            }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -100,12 +109,11 @@ export default function AuthenticatePage() {
       </div>
 
       <button
-        type="button"
         onClick={handleGoogleLogin}
-        className="w-full flex items-center justify-center gap-2 py-3 mb-6 bg-white text-gray-800 rounded font-semibold hover:bg-gray-100 transition"
+        className="w-full flex items-center justify-center gap-3 py-3 mb-6 bg-white text-gray-800 rounded-xl font-semibold shadow hover:bg-gray-100 transition"
       >
         <FaGoogle className="text-red-500" />
-        Continue with Google
+        Sign in with Google
       </button>
 
       <AnimatePresence mode="wait">
@@ -123,12 +131,12 @@ export default function AuthenticatePage() {
               <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
               <input
                 type="email"
+                placeholder="Email"
                 value={loginData.email}
                 onChange={(e) =>
                   setLoginData({ ...loginData, email: e.target.value })
                 }
-                placeholder="Email"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
@@ -136,18 +144,18 @@ export default function AuthenticatePage() {
               <FaLock className="absolute left-3 top-4 text-gray-400" />
               <input
                 type="password"
+                placeholder="Password"
                 value={loginData.password}
                 onChange={(e) =>
                   setLoginData({ ...loginData, password: e.target.value })
                 }
-                placeholder="Password"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-indigo-600 rounded text-white font-semibold hover:bg-indigo-700 transition"
+              className="w-full py-3 bg-indigo-600 rounded-xl text-white font-semibold hover:bg-indigo-700 transition"
             >
               Login
             </button>
@@ -170,7 +178,7 @@ export default function AuthenticatePage() {
                   setRegisterData({ ...registerData, name: e.target.value })
                 }
                 placeholder="Name"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
@@ -183,7 +191,7 @@ export default function AuthenticatePage() {
                   setRegisterData({ ...registerData, email: e.target.value })
                 }
                 placeholder="Email"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
@@ -198,7 +206,7 @@ export default function AuthenticatePage() {
                   })
                 }
                 placeholder="Username"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
@@ -214,19 +222,19 @@ export default function AuthenticatePage() {
                   })
                 }
                 placeholder="Password"
-                className="w-full pl-10 px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-indigo-600 rounded text-white font-semibold hover:bg-indigo-700 transition"
+              className="w-full py-3 bg-indigo-600 rounded-xl text-white font-semibold hover:bg-indigo-700 transition"
             >
               Register
             </button>
           </motion.form>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
