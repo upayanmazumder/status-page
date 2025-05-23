@@ -9,6 +9,8 @@ const CORE_ASSETS = [
   "/fonts/RedHatMono-VariableFont_wght.ttf",
   "/fonts/Montserrat-Bold.ttf",
   "/fonts/Montserrat-Regular.ttf",
+  "/icon.png",
+  "/icon.webp",
   "/icons/icon-16x16.webp",
   "/icons/icon-32x32.webp",
   "/icons/icon-48x48.webp",

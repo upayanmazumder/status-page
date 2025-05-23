@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
+import ServiceworkerRegister from "../components/ServiceworkerRegister/ServiceworkerRegister";
+import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Status Page",
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Header />
         <AuthProvider>{children}</AuthProvider>
         <Footer />
+        <ServiceworkerRegister />
       </body>
     </html>
   );
