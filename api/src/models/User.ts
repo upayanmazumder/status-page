@@ -5,6 +5,7 @@ export interface IUser extends Document {
   password?: string;
   googleId?: string;
   username?: string;
+  profilePicture?: string;
   createdAt: Date;
 }
 
@@ -14,6 +15,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String },
     googleId: { type: String },
     username: { type: String, unique: true, sparse: true },
+    profilePicture: { type: String },
   },
   { timestamps: true }
 );

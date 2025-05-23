@@ -6,6 +6,7 @@ import axios, { baseURL } from "../../../utils/api";
 import type { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
+import md5 from "md5";
 
 export default function AuthenticatePage() {
   const { login } = useAuth();
@@ -19,6 +20,11 @@ export default function AuthenticatePage() {
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
+
+  const getGravatarUrl = (email: string) => {
+    const hash = md5(email.trim().toLowerCase());
+    return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
+  };
 
   const handleGoogleLogin = () => {
     const apiBase = baseURL;
@@ -45,7 +51,11 @@ export default function AuthenticatePage() {
     e.preventDefault();
     setError(null);
     try {
-      await axios.post("/auth/register", registerData);
+      const profilePicture = getGravatarUrl(registerData.email);
+      await axios.post("/auth/register", {
+        ...registerData,
+        profilePicture,
+      });
       setActiveTab("login");
     } catch (err: unknown) {
       const error = err as AxiosError<{ message: string }>;

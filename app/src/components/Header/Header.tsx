@@ -137,13 +137,15 @@ const Header: React.FC = () => {
         </div>
 
         {user && (
-          <div className="bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium">
-            {username
-              ? `@${username}`
-              : user.username
-              ? `@${user.username}`
-              : user.email}
-          </div>
+          <Link href="/dashboard">
+            <div className="bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition">
+              {username
+                ? `@${username}`
+                : user.username
+                ? `@${user.username}`
+                : user.email}
+            </div>
+          </Link>
         )}
       </div>
     </header>

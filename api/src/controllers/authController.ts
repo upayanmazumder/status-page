@@ -6,7 +6,7 @@ import { User } from "../models/User";
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password, username } = req.body;
+  const { email, password, username, profilePicture } = req.body;
 
   if (!email || !password)
     return res.status(400).json({ message: "Email and password required" });
@@ -36,16 +36,26 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword, username });
+    const user = new User({
+      email,
+      password: hashedPassword,
+      username,
+      profilePicture,
+    });
 
     await user.save();
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, username: user.username },
+      {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        profilePicture: user.profilePicture,
+      },
       JWT_SECRET,
       { expiresIn: "1d" }
     );
-    return res.status(201).json({ token });
+    return res.status(201).json({ token, profilePicture: user.profilePicture });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
@@ -78,12 +88,17 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, username: user.username },
+      {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        profilePicture: user.profilePicture,
+      },
       JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    return res.json({ token });
+    return res.json({ token, profilePicture: user.profilePicture });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
