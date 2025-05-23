@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
 
 export const metadata: Metadata = {
   title: "Status Page",
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body>
         <Header />
         <AuthProvider>{children}</AuthProvider>
+        <Footer />
       </body>
     </html>
   );
