@@ -18,6 +18,12 @@ router.post("/username", authenticateJWT, async (req, res) => {
   const userId = (req as any).userId;
   if (!username) return res.status(400).json({ message: "Username required" });
 
+  if (/\s/.test(username)) {
+    return res
+      .status(400)
+      .json({ message: "Username must not contain spaces" });
+  }
+
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "User not found" });
 
