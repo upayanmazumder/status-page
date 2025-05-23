@@ -28,7 +28,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req, res) => {
-  res.json({ message: "API is running" });
+  res.json({
+    message: "API is running",
+    uptime: Math.round(process.uptime()),
+  });
 });
 
 app.use("/auth", authRoutes);
