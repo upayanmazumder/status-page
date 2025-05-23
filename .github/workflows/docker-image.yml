@@ -1,14 +1,12 @@
-name: Build and Deploy Docker Image
+name: Build Docker Image
 
 on:
   push:
     branches:
-      - "*" # build on all branch pushes
+      - "*"
   pull_request:
     branches:
       - "*"
-  release:
-    types: [published] # trigger on published releases
 
 permissions:
   contents: read
@@ -17,7 +15,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,10 +29,7 @@ jobs:
       - name: Set image tag
         id: set_tag
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
-            # On release, tag = release tag
-            TAG="${GITHUB_REF#refs/tags/}"
-          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             TAG="latest"
           elif [[ "${GITHUB_REF}" == refs/pull/* ]]; then
             PR_NUMBER=$(echo "${GITHUB_REF}" | grep -oP 'refs/pull/\K[0-9]+')
@@ -46,13 +40,9 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
 
-      - name: Build Docker Image
+      - name: Build and Push Docker Image
         run: |
           docker build . \
             --tag ghcr.io/upayanmazumder/status-page:${{ env.TAG }} \
             --build-arg NODE_ENV=production
-
-      - name: Push Docker Image (only on release)
-        if: github.event_name == 'release'
-        run: |
           docker push ghcr.io/upayanmazumder/status-page:${{ env.TAG }}
