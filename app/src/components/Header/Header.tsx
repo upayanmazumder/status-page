@@ -97,10 +97,10 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gray-900 text-white shadow-md sticky top-0 z-50 border-b border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-2">
+    <header className="bg-gray-900 text-white sticky top-0 z-50 ">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 w-full sm:w-auto">
+          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <Image
               src="/icon.webp"
               alt="Logo"
@@ -108,18 +108,18 @@ const Header: React.FC = () => {
               height={36}
               className="rounded"
             />
-            <span className="text-xl font-semibold text-white">
+            <span className="text-xl font-semibold text-white whitespace-nowrap">
               Status Page
             </span>
           </Link>
 
           <div
-            className="relative flex items-center space-x-2 cursor-default"
+            className="relative flex items-center space-x-2 cursor-default mt-2 sm:mt-0"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
           >
             {renderStatusIcon()}
-            <span className="text-sm text-gray-300 font-medium">
+            <span className="text-sm text-gray-300 font-medium whitespace-nowrap">
               {status === "loading"
                 ? "Checking..."
                 : status === "online"
@@ -127,7 +127,7 @@ const Header: React.FC = () => {
                 : "Offline"}
             </span>
             {showTooltip && (
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-lg whitespace-nowrap z-20">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-lg whitespace-nowrap z-20">
                 {status === "online" && uptime !== null
                   ? `Uptime: ${formatUptime(uptime)}`
                   : "API is unreachable"}
@@ -137,8 +137,8 @@ const Header: React.FC = () => {
         </div>
 
         {user && (
-          <Link href="/dashboard">
-            <div className="bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition">
+          <Link href="/dashboard" className="w-full sm:w-auto">
+            <div className="bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition text-center truncate">
               {username
                 ? `@${username}`
                 : user.username
