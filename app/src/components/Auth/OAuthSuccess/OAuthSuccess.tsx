@@ -1,7 +1,10 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../../../components/Auth/AuthProvider/AuthProvider";
+import Loader from "../../Loader/Loader";
+import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 
 export default function OAuthSuccessPage() {
   const router = useRouter();
@@ -9,6 +12,7 @@ export default function OAuthSuccessPage() {
   const { login } = useAuth();
 
   const token = params.get("token");
+  const [showStuck, setShowStuck] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -20,16 +24,22 @@ export default function OAuthSuccessPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  return (
-    <>
-      <span>Signing you in...</span>
+  useEffect(() => {
+    const timer = setTimeout(() => setShowStuck(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
-      <p>
-        Stuck on this page?{" "}
-        <a href="/dashboard" className="text-blue-500 hover:underline">
-          Go to Dashboard
-        </a>
-      </p>
-    </>
+  return (
+    <ProtectedRoute>
+      <Loader />
+      {showStuck && (
+        <p>
+          Stuck here?{" "}
+          <Link href="/dashboard" className="text-blue-500 hover:underline">
+            Go to Dashboard
+          </Link>
+        </p>
+      )}
+    </ProtectedRoute>
   );
 }
