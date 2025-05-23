@@ -88,3 +88,46 @@ export const login = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const setUsername = async (req: Request, res: Response) => {
+  const { username } = req.body;
+  const userId = (req as any).userId;
+  if (!username) return res.status(400).json({ message: "Username required" });
+
+  if (/\s/.test(username)) {
+    return res
+      .status(400)
+      .json({ message: "Username must not contain spaces" });
+  }
+
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (user.username) {
+    return res.status(400).json({ message: "Username already set" });
+  }
+
+  const usernameExists = await User.findOne({ username });
+  if (usernameExists)
+    return res.status(400).json({ message: "Username already taken" });
+
+  user.username = username;
+  await user.save();
+
+  const token = jwt.sign(
+    { id: user._id, email: user.email, username: user.username },
+    JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+  res.json({ token });
+};
+
+export const getUsername = async (req: Request, res: Response) => {
+  const userId = (req as any).userId;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+  const user = await User.findById(userId).select("username");
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  res.json({ username: user.username });
+};

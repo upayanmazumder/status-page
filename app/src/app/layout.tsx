@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
+import Header from "../components/Header/Header";
 
 export const metadata: Metadata = {
   title: "Status Page",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
+        <Header />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
