@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
 import { useAuth } from "../Auth/AuthProvider/AuthProvider";
+import Loader from "../Loader/Loader";
 
 interface Application {
   _id: string;
@@ -53,8 +54,7 @@ function StatusTimeline({
       .finally(() => setLoading(false));
   }, [appId]);
 
-  if (loading)
-    return <div className="text-xs text-gray-400">Loading status...</div>;
+  if (loading) return <Loader />;
   if (!statusBlocks.length)
     return <div className="text-xs text-gray-400">No status history.</div>;
 
@@ -178,7 +178,7 @@ export default function ApplicationList() {
       </form>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       {loading ? (
-        <div>Loading...</div>
+        <Loader />
       ) : (
         <ul className="space-y-4">
           {applications.map((app) => {

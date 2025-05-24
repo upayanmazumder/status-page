@@ -26,7 +26,6 @@ export async function checkAllApplicationsStatus() {
       statusCode = err?.response?.status || 0;
     }
 
-    // Smart update of statusHistory
     const lastPeriod = app.statusHistory[app.statusHistory.length - 1];
 
     if (
@@ -35,13 +34,11 @@ export async function checkAllApplicationsStatus() {
       lastPeriod.statusCode === statusCode &&
       !lastPeriod.to
     ) {
-      // Continue the current period, do nothing
     } else {
-      // Close previous period if open
       if (lastPeriod && !lastPeriod.to) {
         lastPeriod.to = now;
       }
-      // Start a new period, set from = lastPeriod?.to ?? now to avoid gaps
+
       app.statusHistory.push({
         status,
         statusCode,
@@ -50,7 +47,6 @@ export async function checkAllApplicationsStatus() {
       } as IStatusPeriod);
     }
 
-    // Limit history to last 100 entries (optional, for storage)
     if (app.statusHistory.length > 100) {
       app.statusHistory = app.statusHistory.slice(-100);
     }

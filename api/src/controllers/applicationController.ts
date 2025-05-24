@@ -13,7 +13,7 @@ export const addApplication = async (req: Request, res: Response) => {
       name,
       url,
       owner: userId,
-      subscribers: [userId], // owner auto-subscribed
+      subscribers: [userId],
     });
     await app.save();
     res.status(201).json({ application: app });
@@ -56,21 +56,18 @@ export const getStatusHistory = async (req: Request, res: Response) => {
   const app = await Application.findById(appId);
   if (!app) return res.status(404).json({ message: "Application not found" });
 
-  // Calculate 30-min blocks for last 90 days in UTC
   const now = new Date();
   const msIn30Min = 30 * 60 * 1000;
   const days90Ago = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
   const blocks: { from: string; status: string; statusCode: number }[] = [];
 
-  // Pre-sort statusHistory by 'from'
   const history = [...app.statusHistory].sort(
     (a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()
   );
 
-  // Generate each 30-min block
   for (let t = days90Ago.getTime(); t < now.getTime(); t += msIn30Min) {
     const blockStart = new Date(t);
-    // Find the latest period that covers this block
+
     const period = history
       .slice()
       .reverse()
