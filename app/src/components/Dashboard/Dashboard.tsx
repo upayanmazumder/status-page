@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ProtectedRoute from "../Auth/ProtectedRoute/ProtectedRoute";
 import Logout from "../Auth/Logout/Logout";
 import { useAuth } from "../Auth/AuthProvider/AuthProvider";
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user || !user.id) {
@@ -42,6 +44,12 @@ export default function DashboardPage() {
 
     fetchUserData();
   }, [user]);
+
+  useEffect(() => {
+    if (!loading && userDetails && !userDetails.username) {
+      router.replace("/auth/onboarding");
+    }
+  }, [loading, userDetails, router]);
 
   if (loading) {
     return (

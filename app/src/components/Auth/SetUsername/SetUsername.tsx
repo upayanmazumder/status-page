@@ -5,6 +5,8 @@ import api from "../../../utils/api";
 import { useAuth } from "../AuthProvider/AuthProvider";
 import axios from "axios";
 import Loading from "../../Loader/Loader";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle } from "lucide-react";
 
 export default function SetUsername() {
   const [username, setUsername] = useState("");
@@ -38,30 +40,54 @@ export default function SetUsername() {
   if (success) return <Loading />;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-bold">Set your username</h2>
-      <input
-        className="px-4 py-2 rounded bg-gray-700 text-white"
-        value={username}
-        onChange={(e) => {
-          setUsername(e.target.value);
-          if (/\s/.test(e.target.value)) {
-            setError("Username must not contain spaces");
-          } else {
-            setError(null);
-          }
-        }}
-        placeholder="Choose a username"
-        required
-      />
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-4 max-w-sm mx-auto mt-12 p-6 bg-gray-800 rounded-2xl shadow-xl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <h2 className="text-2xl font-bold text-white">Choose a username</h2>
+
+      <div>
+        <input
+          className={`w-full px-4 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+            error ? "ring-2 ring-red-500" : ""
+          }`}
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            if (/\s/.test(e.target.value)) {
+              setError("Username must not contain spaces");
+            } else {
+              setError(null);
+            }
+          }}
+          placeholder="e.g. johndoe123"
+          required
+        />
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              className="flex items-center gap-2 text-sm text-red-400 mt-2"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+            >
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <button
         type="submit"
-        className="px-4 py-2 bg-indigo-600 text-white rounded"
+        className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={!username || !!error}
       >
         Save
       </button>
-      {error && <div className="text-red-500">{error}</div>}
-    </form>
+    </motion.form>
   );
 }
