@@ -7,6 +7,14 @@ import session from "express-session";
 import passport from "./utils/passport";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import applicationRoutes from "./routes/applicationRoutes";
+import { checkAllApplicationsStatus } from "./jobs/applicationStatusChecker";
+
+setInterval(() => {
+  checkAllApplicationsStatus().catch((err) =>
+    console.error("Status check error:", err)
+  );
+}, 60 * 1000);
 
 const app = express();
 
@@ -37,5 +45,6 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/applications", applicationRoutes);
 
 export default app;

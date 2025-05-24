@@ -35,7 +35,7 @@
     rgba(2, 12, 27, 0.7)
   );
 
-  --screen-horizontal-margin: var(--margin-huge);
+  --screen-horizontal-margin: clamp(1rem, 5vw, 4rem);
   --screen-vertical-margin: 0;
 
   --text-link-color: #1c86ee;

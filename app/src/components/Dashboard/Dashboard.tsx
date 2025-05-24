@@ -8,6 +8,7 @@ import { useAuth } from "../Auth/AuthProvider/AuthProvider";
 import api from "../../utils/api";
 import Loader from "../Loader/Loader";
 import Image from "next/image";
+import Applications from "../Application/Application";
 
 interface UserDetails {
   email: string;
@@ -134,6 +135,8 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
+
+        <Applications />
 
         <div className="mt-10">
           <Logout />
