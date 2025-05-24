@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <main className="max-w-lg mx-auto mt-16 p-8 rounded-xl shadow-lg text-gray-300">
+      <main className="mx-auto mt-16 p-8 rounded-xl shadow-lg text-gray-300">
         <h1 className="text-3xl font-bold mb-6 text-white">Welcome back!</h1>
         <section className="flex items-center gap-5 mb-8">
           {userDetails.profilePicture ? (

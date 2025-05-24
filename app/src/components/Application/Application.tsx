@@ -12,6 +12,98 @@ interface Application {
   subscribers: { email: string; username?: string }[];
 }
 
+interface StatusPeriod {
+  status: "online" | "offline";
+  statusCode: number;
+  from: string;
+  to?: string;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  online: "bg-green-500",
+  offline: "bg-red-500",
+};
+
+function StatusTimeline({
+  appId,
+  hours = 24,
+}: {
+  appId: string;
+  hours?: number;
+}) {
+  const [history, setHistory] = useState<StatusPeriod[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    api.get(`/applications/${appId}/status-history`).then((res) => {
+      if (mounted) {
+        setHistory(res.data.statusHistory);
+        setLoading(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [appId]);
+
+  if (loading)
+    return <div className="text-xs text-gray-400">Loading status...</div>;
+  if (!history.length)
+    return <div className="text-xs text-gray-400">No status history.</div>;
+
+  const now = new Date();
+  const fromTime = new Date(now.getTime() - hours * 60 * 60 * 1000);
+
+  const filtered = history.filter((p) => new Date(p.to || now) >= fromTime);
+
+  const totalMs = hours * 60 * 60 * 1000;
+  const timeline: {
+    left: number;
+    width: number;
+    status: string;
+    from: string;
+    to: string;
+  }[] = [];
+
+  filtered.forEach((period) => {
+    const start = Math.max(new Date(period.from).getTime(), fromTime.getTime());
+    const end = Math.min(new Date(period.to || now).getTime(), now.getTime());
+    if (end <= start) return;
+    const left = ((start - fromTime.getTime()) / totalMs) * 100;
+    const width = ((end - start) / totalMs) * 100;
+    timeline.push({
+      left,
+      width,
+      status: period.status,
+      from: new Date(start).toLocaleTimeString(),
+      to: new Date(end).toLocaleTimeString(),
+    });
+  });
+
+  return (
+    <div>
+      <div className="relative h-4 w-full bg-gray-300 rounded overflow-hidden my-2">
+        {timeline.map((seg, i) => (
+          <div
+            key={i}
+            className={`absolute top-0 h-full ${STATUS_COLORS[seg.status]}`}
+            style={{
+              left: `${seg.left}%`,
+              width: `${seg.width}%`,
+            }}
+            title={`${seg.status.toUpperCase()}: ${seg.from} - ${seg.to}`}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{fromTime.toLocaleString()}</span>
+        <span>{now.toLocaleString()}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function ApplicationList() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,6 +245,7 @@ export default function ApplicationList() {
                   {" | "}
                   Subscribers: {app.subscribers.length}
                 </div>
+                <StatusTimeline appId={app._id} hours={24} />
               </li>
             );
           })}

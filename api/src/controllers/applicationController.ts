@@ -50,3 +50,21 @@ export const unsubscribe = async (req: Request, res: Response) => {
   await app.save();
   res.json({ message: "Unsubscribed", application: app });
 };
+
+export const getStatusHistory = async (req: Request, res: Response) => {
+  const { appId } = req.params;
+  const app = await Application.findById(appId);
+  if (!app) return res.status(404).json({ message: "Application not found" });
+
+  // Return statusHistory sorted by 'from' ascending
+  res.json({
+    statusHistory: app.statusHistory
+      .map((period) => ({
+        status: period.status,
+        statusCode: period.statusCode,
+        from: period.from,
+        to: period.to,
+      }))
+      .sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime()),
+  });
+};
