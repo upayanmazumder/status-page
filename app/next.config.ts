@@ -15,5 +15,8 @@ const nextConfig = {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   },
+  images: {
+    domains: ["lh3.googleusercontent.com"],
+  },
 };
 export default nextConfig;

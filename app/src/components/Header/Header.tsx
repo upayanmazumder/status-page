@@ -39,6 +39,9 @@ const Header: React.FC = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { user } = useAuth();
   const [username, setUsername] = useState<string | undefined>(undefined);
+  const [profilePicture, setProfilePicture] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -83,6 +86,26 @@ const Header: React.FC = () => {
       }
     };
     fetchUsername();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchProfile = async () => {
+      if (user?.id) {
+        try {
+          const res = await api.get("/user/profile");
+          if (mounted) setProfilePicture(res.data.user?.profilePicture);
+        } catch {
+          if (mounted) setProfilePicture(undefined);
+        }
+      } else {
+        if (mounted) setProfilePicture(undefined);
+      }
+    };
+    fetchProfile();
     return () => {
       mounted = false;
     };
@@ -138,12 +161,23 @@ const Header: React.FC = () => {
 
         {user && (
           <Link href="/dashboard" className="w-full sm:w-auto">
-            <div className="bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition text-center truncate">
-              {username
-                ? `@${username}`
-                : user.username
-                ? `@${user.username}`
-                : user.email}
+            <div className="flex items-center gap-2 bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition text-center truncate">
+              {profilePicture && (
+                <Image
+                  src={profilePicture}
+                  alt="Profile"
+                  width={24}
+                  height={24}
+                  className="rounded-full border border-gray-700"
+                />
+              )}
+              <span className="truncate max-w-[120px]">
+                {username
+                  ? `@${username}`
+                  : user.username
+                  ? `@${user.username}`
+                  : user.email}
+              </span>
             </div>
           </Link>
         )}

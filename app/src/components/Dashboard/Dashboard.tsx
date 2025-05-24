@@ -6,11 +6,20 @@ import Logout from "../Auth/Logout/Logout";
 import { useAuth } from "../Auth/AuthProvider/AuthProvider";
 import api from "../../utils/api";
 import Loader from "../Loader/Loader";
-import Link from "next/link";
+import Image from "next/image";
+
+interface UserDetails {
+  email: string;
+  username?: string;
+  profilePicture?: string;
+  createdAt?: string;
+  googleId?: string;
+  _id?: string;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [username, setUsername] = useState<string | undefined>(undefined);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,35 +28,30 @@ export default function DashboardPage() {
       return;
     }
 
-    const fetchUsername = async () => {
+    const fetchUserData = async () => {
       try {
-        const res = await api.get("/auth/username");
-        setUsername(res.data.username);
+        const res = await api.get("/user/profile");
+        setUserDetails(res.data.user);
       } catch {
-        setUsername(undefined);
+        setUserDetails(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsername();
+    fetchUserData();
   }, [user]);
 
   if (loading) {
     return <Loader />;
   }
 
-  if (!username) {
+  if (!userDetails) {
     return (
       <ProtectedRoute>
         <main>
           <h1>Dashboard</h1>
-          <Link
-            href="/auth/onboarding"
-            className="inline-block px-4 py-2 mt-4 bg-indigo-600 text-white rounded"
-          >
-            Set Username
-          </Link>
+          <p className="text-red-500 mt-4">Could not load user details.</p>
           <Logout />
         </main>
       </ProtectedRoute>
@@ -58,9 +62,40 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <main>
         <h1>Dashboard</h1>
-        <p>
-          Welcome, <span className="font-bold">{username}</span>!
-        </p>
+        <div className="flex items-center gap-3 mt-4">
+          {userDetails.profilePicture && (
+            <Image
+              src={userDetails.profilePicture}
+              alt="Profile"
+              width={48}
+              height={48}
+              className="rounded-full border border-gray-300"
+            />
+          )}
+          <div>
+            <p>
+              <span className="font-bold text-lg">
+                {userDetails.username
+                  ? `@${userDetails.username}`
+                  : userDetails.email}
+              </span>
+            </p>
+            <p className="text-gray-400 text-sm">{userDetails.email}</p>
+            {userDetails.createdAt && (
+              <p className="text-gray-400 text-xs">
+                Joined: {new Date(userDetails.createdAt).toLocaleDateString()}
+              </p>
+            )}
+            {userDetails.googleId && (
+              <p className="text-gray-400 text-xs">Google Connected</p>
+            )}
+            {userDetails._id && (
+              <p className="text-gray-400 text-xs">
+                User ID: {userDetails._id}
+              </p>
+            )}
+          </div>
+        </div>
         <Logout />
       </main>
     </ProtectedRoute>
