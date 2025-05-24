@@ -119,3 +119,11 @@ main {
   justify-content: center;
   align-items: center;
 }
+
+button {
+  text-decoration: none;
+}
+
+button:hover {
+  cursor: pointer;
+}
