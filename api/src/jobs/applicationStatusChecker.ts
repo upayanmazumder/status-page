@@ -35,18 +35,17 @@ export async function checkAllApplicationsStatus() {
       lastPeriod.statusCode === statusCode &&
       !lastPeriod.to
     ) {
-      // Extend the current period
-      lastPeriod.to = now;
+      // Continue the current period, do nothing
     } else {
       // Close previous period if open
       if (lastPeriod && !lastPeriod.to) {
         lastPeriod.to = now;
       }
-      // Start a new period
+      // Start a new period, set from = lastPeriod?.to ?? now to avoid gaps
       app.statusHistory.push({
         status,
         statusCode,
-        from: now,
+        from: lastPeriod?.to ?? now,
         to: undefined,
       } as IStatusPeriod);
     }

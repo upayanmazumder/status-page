@@ -8,7 +8,7 @@ interface StatusPeriod {
   to?: string;
 }
 
-interface Props {
+interface StatusTimelineProps {
   appId: string;
   days?: number;
 }
@@ -19,87 +19,99 @@ const STATUS_COLORS: Record<string, string> = {
   nodata: "bg-gray-400",
 };
 
-function getDayKey(date: Date) {
-  // YYYY-MM-DD
-  return date.toISOString().slice(0, 10);
-}
+const getDayKey = (date: Date) => date.toISOString().split("T")[0];
 
-export default function StatusTimeline({ appId, days = 10 }: Props) {
-  const [history, setHistory] = useState<StatusPeriod[]>([]);
+const StatusTimeline: React.FC<StatusTimelineProps> = ({
+  appId,
+  days = 10,
+}) => {
+  const [statusHistory, setStatusHistory] = useState<StatusPeriod[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/applications/${appId}/status-history`).then((res) => {
-      setHistory(res.data.statusHistory);
-      setLoading(false);
-    });
+    let mounted = true;
+    api
+      .get(`/applications/${appId}/status-history`)
+      .then((res) => {
+        if (mounted) setStatusHistory(res.data.statusHistory || []);
+      })
+      .catch((err) => {
+        console.error("Failed to load status history", err);
+      })
+      .finally(() => setLoading(false));
+
+    return () => {
+      mounted = false;
+    };
   }, [appId]);
 
-  if (loading) return <div>Loading status...</div>;
-  if (!history.length) return <div>No status history.</div>;
+  if (loading) {
+    return <div className="text-xs text-gray-400">Loading status...</div>;
+  }
 
-  // Build a map of dayKey -> array of periods for that day
+  if (!statusHistory.length) {
+    return <div className="text-xs text-gray-400">No status history.</div>;
+  }
+
   const now = new Date();
-  const dayMap: Record<string, StatusPeriod[]> = {};
+  now.setHours(23, 59, 59, 999);
 
-  history.forEach((period) => {
-    const start = new Date(period.from);
-    const end = new Date(period.to || now);
-    let d = new Date(start);
-    d.setHours(0, 0, 0, 0);
-    const endDay = new Date(end);
-    endDay.setHours(0, 0, 0, 0);
+  const summaryBars: {
+    dateKey: string;
+    tooltip: string;
+    color: string;
+  }[] = [];
 
-    while (d <= endDay) {
-      const key = getDayKey(d);
-      if (!dayMap[key]) dayMap[key] = [];
-      dayMap[key].push(period);
-      d = new Date(d.getTime() + 24 * 60 * 60 * 1000);
-    }
-  });
-
-  // Build the last N days, oldest to newest
-  const bars: { key: string; color: string; tooltip: string }[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const day = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const key = getDayKey(day);
-    const periods = dayMap[key] || [];
+    const dayStart = new Date(day);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(day);
+    dayEnd.setHours(23, 59, 59, 999);
+    const dateKey = getDayKey(day);
+
+    const periodsOnDay = statusHistory.filter((period) => {
+      const from = new Date(period.from);
+      const to = new Date(period.to || now);
+      return from <= dayEnd && to >= dayStart;
+    });
+
     let color = STATUS_COLORS.nodata;
-    let tooltip = day.toLocaleDateString();
-    if (periods.length > 0) {
-      // If any period is offline, mark as offline
-      if (periods.some((p) => p.status === "offline")) {
+    let tooltip = `${day.toLocaleDateString()}: No data`;
+
+    if (periodsOnDay.length > 0) {
+      const anyOffline = periodsOnDay.some((p) => p.status === "offline");
+      const allOnline = periodsOnDay.every((p) => p.status === "online");
+
+      if (anyOffline) {
         color = STATUS_COLORS.offline;
-        tooltip += ": Offline";
-      } else {
+        tooltip = `${day.toLocaleDateString()}: Offline`;
+      } else if (allOnline) {
         color = STATUS_COLORS.online;
-        tooltip += ": Online";
+        tooltip = `${day.toLocaleDateString()}: Online`;
       }
-    } else {
-      tooltip += ": No data";
     }
-    bars.push({ key, color, tooltip });
+
+    summaryBars.push({ dateKey, tooltip, color });
   }
 
   return (
     <div>
-      <div className="flex gap-[1px] my-2">
-        {bars.map((bar) => (
+      <div className="flex gap-[2px] my-2">
+        {summaryBars.map((bar) => (
           <div
-            key={bar.key}
-            className={`${bar.color} h-4 w-2 rounded-sm`}
+            key={bar.dateKey}
+            className={`w-4 h-4 rounded-sm ${bar.color}`}
             title={bar.tooltip}
           />
         ))}
       </div>
       <div className="flex justify-between text-xs text-gray-500">
-        <span>
-          {new Date(
-            now.getTime() - (days - 1) * 24 * 60 * 60 * 1000
-          ).toLocaleDateString()}
-        </span>
-        <span>{now.toLocaleDateString()}</span>
+        <span>{summaryBars[0].dateKey}</span>
+        <span>{summaryBars[summaryBars.length - 1].dateKey}</span>
       </div>
     </div>
   );
-}
+};
+
+export default StatusTimeline;

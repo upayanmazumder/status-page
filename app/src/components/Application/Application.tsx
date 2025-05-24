@@ -245,7 +245,7 @@ export default function ApplicationList() {
                   {" | "}
                   Subscribers: {app.subscribers.length}
                 </div>
-                <StatusTimeline appId={app._id} hours={24} />
+                <StatusTimeline appId={app._id} hours={240} />
               </li>
             );
           })}
