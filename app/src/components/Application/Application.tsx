@@ -12,93 +12,91 @@ interface Application {
   subscribers: { email: string; username?: string }[];
 }
 
-interface StatusPeriod {
-  status: "online" | "offline";
+interface StatusBlock {
+  from: string; // ISO string
+  status: "online" | "offline" | "unknown";
   statusCode: number;
-  from: string;
-  to?: string;
 }
+
+const STATUS_PRIORITY = {
+  offline: 2,
+  unknown: 1,
+  online: 0,
+};
 
 const STATUS_COLORS: Record<string, string> = {
   online: "bg-green-500",
   offline: "bg-red-500",
+  unknown: "bg-gray-400",
 };
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString();
+}
 
 function StatusTimeline({
   appId,
-  hours = 24,
+  days = 90,
 }: {
   appId: string;
-  hours?: number;
+  days?: number;
 }) {
-  const [history, setHistory] = useState<StatusPeriod[]>([]);
+  const [statusBlocks, setStatusBlocks] = useState<StatusBlock[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-    api.get(`/applications/${appId}/status-history`).then((res) => {
-      if (mounted) {
-        setHistory(res.data.statusHistory);
-        setLoading(false);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
+    api
+      .get(`/applications/${appId}/status-history`)
+      .then((res) => setStatusBlocks(res.data.statusBlocks || []))
+      .catch((err) => console.error("Failed to load status history", err))
+      .finally(() => setLoading(false));
   }, [appId]);
 
   if (loading)
     return <div className="text-xs text-gray-400">Loading status...</div>;
-  if (!history.length)
+  if (!statusBlocks.length)
     return <div className="text-xs text-gray-400">No status history.</div>;
 
-  const now = new Date();
-  const fromTime = new Date(now.getTime() - hours * 60 * 60 * 1000);
+  // Group blocks by date, keeping the worst status of each day
+  const groupedByDate: Record<string, StatusBlock[]> = {};
+  for (const block of statusBlocks) {
+    const date = new Date(block.from).toISOString().split("T")[0];
+    groupedByDate[date] = groupedByDate[date] || [];
+    groupedByDate[date].push(block);
+  }
 
-  const filtered = history.filter((p) => new Date(p.to || now) >= fromTime);
+  const dailyStatus: { date: string; status: string }[] = Object.entries(
+    groupedByDate
+  )
+    .map(([date, blocks]) => {
+      const worst = blocks.reduce((worst, curr) =>
+        STATUS_PRIORITY[curr.status] > STATUS_PRIORITY[worst.status]
+          ? curr
+          : worst
+      );
+      return { date, status: worst.status };
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(-days);
 
-  const totalMs = hours * 60 * 60 * 1000;
-  const timeline: {
-    left: number;
-    width: number;
-    status: string;
-    from: string;
-    to: string;
-  }[] = [];
-
-  filtered.forEach((period) => {
-    const start = Math.max(new Date(period.from).getTime(), fromTime.getTime());
-    const end = Math.min(new Date(period.to || now).getTime(), now.getTime());
-    if (end <= start) return;
-    const left = ((start - fromTime.getTime()) / totalMs) * 100;
-    const width = ((end - start) / totalMs) * 100;
-    timeline.push({
-      left,
-      width,
-      status: period.status,
-      from: new Date(start).toLocaleTimeString(),
-      to: new Date(end).toLocaleTimeString(),
-    });
-  });
+  const firstDate = dailyStatus[0]?.date;
+  const lastDate = dailyStatus[dailyStatus.length - 1]?.date;
 
   return (
     <div>
-      <div className="relative h-4 w-full bg-gray-300 rounded overflow-hidden my-2">
-        {timeline.map((seg, i) => (
+      <div className="flex gap-[1px] my-2 overflow-x-auto">
+        {dailyStatus.map(({ date, status }) => (
           <div
-            key={i}
-            className={`absolute top-0 h-full ${STATUS_COLORS[seg.status]}`}
-            style={{
-              left: `${seg.left}%`,
-              width: `${seg.width}%`,
-            }}
-            title={`${seg.status.toUpperCase()}: ${seg.from} - ${seg.to}`}
+            key={date}
+            className={`w-2 h-4 rounded-sm ${STATUS_COLORS[status]}`}
+            title={`${formatDate(date)} (${status.toUpperCase()})`}
           />
         ))}
       </div>
       <div className="flex justify-between text-xs text-gray-500">
-        <span>{fromTime.toLocaleString()}</span>
-        <span>{now.toLocaleString()}</span>
+        <span>{formatDate(firstDate)}</span>
+        <span>{formatDate(lastDate)}</span>
       </div>
     </div>
   );
@@ -136,38 +134,17 @@ export default function ApplicationList() {
       setName("");
       setUrl("");
       fetchApplications();
-    } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setError(
-          (err.response as { message?: string }).message ||
-            "Failed to add application."
-        );
-      } else {
-        setError("Failed to add application.");
-      }
+    } catch {
+      setError("Failed to add application.");
     }
   };
 
-  const handleSubscribe = async (appId: string) => {
+  const toggleSubscription = async (appId: string, subscribed: boolean) => {
     try {
-      await api.post(`/applications/${appId}/subscribe`);
-      fetchApplications();
-    } catch {}
-  };
-
-  const handleUnsubscribe = async (appId: string) => {
-    try {
-      await api.post(`/applications/${appId}/unsubscribe`);
+      const url = `/applications/${appId}/${
+        subscribed ? "unsubscribe" : "subscribe"
+      }`;
+      await api.post(url);
       fetchApplications();
     } catch {}
   };
@@ -208,44 +185,31 @@ export default function ApplicationList() {
             const isSubscribed =
               !!user && app.subscribers.some((s) => s.email === user.email);
             return (
-              <li
-                key={app._id}
-                className="p-4 bg-gray-800 rounded flex flex-col gap-1"
-              >
-                <div className="flex justify-between items-center">
+              <li key={app._id} className="p-4 bg-gray-800 rounded">
+                <div className="flex justify-between items-center mb-1">
                   <div>
                     <span className="font-semibold">{app.name}</span>
                     <span className="ml-2 text-gray-400 text-sm">
                       {app.url}
                     </span>
                   </div>
-                  <div>
-                    {isSubscribed ? (
-                      <button
-                        className="bg-red-600 px-3 py-1 rounded text-white text-sm"
-                        onClick={() => handleUnsubscribe(app._id)}
-                      >
-                        Unsubscribe
-                      </button>
-                    ) : (
-                      <button
-                        className="bg-green-600 px-3 py-1 rounded text-white text-sm"
-                        onClick={() => handleSubscribe(app._id)}
-                      >
-                        Subscribe
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    className={`px-3 py-1 rounded text-white text-sm ${
+                      isSubscribed ? "bg-red-600" : "bg-green-600"
+                    }`}
+                    onClick={() => toggleSubscription(app._id, isSubscribed)}
+                  >
+                    {isSubscribed ? "Unsubscribe" : "Subscribe"}
+                  </button>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-400 mb-1">
                   Owner:{" "}
                   {app.owner.username
                     ? `@${app.owner.username}`
-                    : app.owner.email}
-                  {" | "}
-                  Subscribers: {app.subscribers.length}
+                    : app.owner.email}{" "}
+                  | Subscribers: {app.subscribers.length}
                 </div>
-                <StatusTimeline appId={app._id} hours={240} />
+                <StatusTimeline appId={app._id} days={90} />
               </li>
             );
           })}
