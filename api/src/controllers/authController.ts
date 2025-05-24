@@ -6,7 +6,7 @@ import { User } from "../models/User";
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password, username, profilePicture } = req.body;
+  const { email, password, username, profilePicture, name } = req.body;
 
   if (!email || !password)
     return res.status(400).json({ message: "Email and password required" });
@@ -41,6 +41,7 @@ export const register = async (req: Request, res: Response) => {
       password: hashedPassword,
       username,
       profilePicture,
+      name,
     });
 
     await user.save();
@@ -51,6 +52,7 @@ export const register = async (req: Request, res: Response) => {
         email: user.email,
         username: user.username,
         profilePicture: user.profilePicture,
+        name: user.name,
       },
       JWT_SECRET,
       { expiresIn: "1d" }

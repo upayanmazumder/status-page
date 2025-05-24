@@ -15,6 +15,7 @@ interface UserDetails {
   createdAt?: string;
   googleId?: string;
   _id?: string;
+  name?: string;
 }
 
 export default function DashboardPage() {
@@ -43,15 +44,21 @@ export default function DashboardPage() {
   }, [user]);
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div className="flex justify-center items-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (!userDetails) {
     return (
       <ProtectedRoute>
-        <main>
-          <h1>Dashboard</h1>
-          <p className="text-red-500 mt-4">Could not load user details.</p>
+        <main className="max-w-md mx-auto mt-16 p-6 bg-red-900 border border-red-700 rounded-md shadow-md text-center text-red-300">
+          <h1 className="text-2xl font-semibold mb-4">Dashboard</h1>
+          <p className="mb-6">
+            ⚠️ Could not load user details. Please try again later.
+          </p>
           <Logout />
         </main>
       </ProtectedRoute>
@@ -60,43 +67,69 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <main>
-        <h1>Dashboard</h1>
-        <div className="flex items-center gap-3 mt-4">
-          {userDetails.profilePicture && (
+      <main className="max-w-lg mx-auto mt-16 p-8 rounded-xl shadow-lg text-gray-300">
+        <h1 className="text-3xl font-bold mb-6 text-white">Welcome back!</h1>
+        <section className="flex items-center gap-5 mb-8">
+          {userDetails.profilePicture ? (
             <Image
               src={userDetails.profilePicture}
-              alt="Profile"
-              width={48}
-              height={48}
-              className="rounded-full border border-gray-300"
+              alt="Profile picture"
+              width={72}
+              height={72}
+              className="rounded-full border-2 border-indigo-400 shadow-md transition-transform hover:scale-105"
             />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-indigo-700 flex items-center justify-center text-indigo-300 font-bold text-xl">
+              {userDetails.name
+                ? userDetails.name.charAt(0).toUpperCase()
+                : userDetails.username
+                ? userDetails.username.charAt(0).toUpperCase()
+                : "U"}
+            </div>
           )}
+
           <div>
-            <p>
-              <span className="font-bold text-lg">
-                {userDetails.username
-                  ? `@${userDetails.username}`
-                  : userDetails.email}
-              </span>
+            <p className="text-xl font-semibold text-white">
+              {userDetails.name
+                ? userDetails.name
+                : userDetails.username
+                ? `@${userDetails.username}`
+                : userDetails.email}
             </p>
-            <p className="text-gray-400 text-sm">{userDetails.email}</p>
-            {userDetails.createdAt && (
-              <p className="text-gray-400 text-xs">
-                Joined: {new Date(userDetails.createdAt).toLocaleDateString()}
-              </p>
-            )}
-            {userDetails.googleId && (
-              <p className="text-gray-400 text-xs">Google Connected</p>
-            )}
-            {userDetails._id && (
-              <p className="text-gray-400 text-xs">
-                User ID: {userDetails._id}
-              </p>
-            )}
+            <p className="text-indigo-300">{userDetails.email}</p>
           </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-4 text-indigo-200 text-sm">
+          {userDetails.createdAt && (
+            <div
+              className={`bg-indigo-900 p-3 rounded-md ${
+                !userDetails.googleId ? "col-span-2" : ""
+              }`}
+            >
+              <strong className="block text-indigo-400">Joined</strong>
+              <span>
+                {new Date(userDetails.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+          {userDetails.googleId && (
+            <div className="bg-indigo-900 p-3 rounded-md">
+              <strong className="block text-indigo-400">Google Account</strong>
+              <span>Connected</span>
+            </div>
+          )}
+          {userDetails._id && (
+            <div className="bg-indigo-900 p-3 rounded-md col-span-2 break-words">
+              <strong className="block text-indigo-400">User ID</strong>
+              <span>{userDetails._id}</span>
+            </div>
+          )}
+        </section>
+
+        <div className="mt-10">
+          <Logout />
         </div>
-        <Logout />
       </main>
     </ProtectedRoute>
   );

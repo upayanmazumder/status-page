@@ -27,6 +27,7 @@ passport.use(
         let user = await User.findOne({ googleId: profile.id });
         if (user) return done(null, user);
 
+        const name = profile.displayName;
         const email = profile.emails?.[0].value;
         const photo = profile.photos?.[0]?.value;
         if (email) {
@@ -34,6 +35,7 @@ passport.use(
           if (user) {
             user.googleId = profile.id;
             user.profilePicture = photo;
+            user.name = name;
             await user.save();
             return done(null, user);
           }
@@ -43,6 +45,7 @@ passport.use(
           googleId: profile.id,
           email,
           profilePicture: photo,
+          name,
         });
         await newUser.save();
         return done(null, newUser);

@@ -16,12 +16,14 @@ interface User {
   id: string;
   email: string;
   username?: string;
+  name?: string;
 }
 
 interface JwtPayload {
   id: string;
   email: string;
   username?: string;
+  name?: string;
   exp?: number;
   iat?: number;
 }
@@ -59,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             id: decoded.id,
             email: decoded.email,
             username: decoded.username,
+            name: decoded.name,
           });
         }
       } catch {

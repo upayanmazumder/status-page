@@ -52,6 +52,7 @@ export default function AuthenticatePage() {
       await axios.post("/auth/register", {
         ...registerData,
         profilePicture,
+        name: registerData.name,
       });
       setActiveTab("login");
     } catch (err: unknown) {

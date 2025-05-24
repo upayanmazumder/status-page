@@ -30,9 +30,17 @@ router.get(
   passport.authenticate("google", { session: false, failureRedirect: "/" }),
   (req, res) => {
     const user = req.user as any;
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        profilePicture: user.profilePicture,
+        name: user.name,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1d" }
+    );
 
     res.redirect(
       `${process.env.FRONTEND_URL}/auth/oauth-success?token=${token}`

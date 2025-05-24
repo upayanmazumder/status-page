@@ -42,6 +42,7 @@ const Header: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<string | undefined>(
     undefined
   );
+  const [name, setName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -97,12 +98,21 @@ const Header: React.FC = () => {
       if (user?.id) {
         try {
           const res = await api.get("/user/profile");
-          if (mounted) setProfilePicture(res.data.user?.profilePicture);
+          if (mounted) {
+            setProfilePicture(res.data.user?.profilePicture);
+            setName(res.data.user?.name);
+          }
         } catch {
-          if (mounted) setProfilePicture(undefined);
+          if (mounted) {
+            setProfilePicture(undefined);
+            setName(undefined);
+          }
         }
       } else {
-        if (mounted) setProfilePicture(undefined);
+        if (mounted) {
+          setProfilePicture(undefined);
+          setName(undefined);
+        }
       }
     };
     fetchProfile();
@@ -174,6 +184,8 @@ const Header: React.FC = () => {
               <span className="truncate max-w-[120px]">
                 {username
                   ? `@${username}`
+                  : name
+                  ? name.split(" ")[0]
                   : user.username
                   ? `@${user.username}`
                   : user.email}
