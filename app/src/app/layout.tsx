@@ -4,6 +4,7 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import ServiceworkerRegister from "../components/ServiceworkerRegister/ServiceworkerRegister";
 import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
+import { NotificationProvider } from "@/components/Notification/Notification";
 
 export const metadata: Metadata = {
   title: "Status Page",
@@ -24,12 +25,14 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
-        <AuthProvider>
-          <Header />
-          {children}
-        </AuthProvider>
-        <Footer />
-        <ServiceworkerRegister />
+        <NotificationProvider>
+          <AuthProvider>
+            <Header />
+            {children}
+          </AuthProvider>
+          <Footer />
+          <ServiceworkerRegister />
+        </NotificationProvider>
       </body>
     </html>
   );

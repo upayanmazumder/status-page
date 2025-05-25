@@ -7,11 +7,13 @@ import axios from "axios";
 import Loading from "../../Loader/Loader";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle } from "lucide-react";
+import { useNotification } from "../../Notification/Notification";
 
 export default function SetUsername() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { notify } = useNotification();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -26,13 +28,17 @@ export default function SetUsername() {
     try {
       const res = await api.post("/auth/username", { username });
       login(res.data.token);
+      notify("Username set successfully!", "success");
       setSuccess(true);
       setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Failed to set username");
+        notify(
+          err.response?.data?.message || "Failed to set username",
+          "error"
+        );
       } else {
-        setError("Failed to set username");
+        notify("Unexpected error occurred", "error");
       }
     }
   };

@@ -82,7 +82,7 @@ function StatusTimeline({
 
   return (
     <div className="w-full">
-      <div className="flex gap-1 my-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+      <div className="flex gap-0.5 my-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
         {dailyStatus.map(({ date, status }) => (
           <div
             key={date}
@@ -99,10 +99,24 @@ function StatusTimeline({
   );
 }
 
+function useWindowWidth() {
+  const [width, setWidth] = useState<number>(window.innerWidth);
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return width;
+}
+
 export default function ApplicationsList() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+
+  const width = useWindowWidth();
 
   const fetchApplications = useCallback(async () => {
     setLoading(true);
@@ -123,6 +137,13 @@ export default function ApplicationsList() {
   }, [fetchApplications]);
 
   if (loading) return <Loader />;
+
+  let daysToShow = 30; // default phone
+  if (width >= 1024) {
+    daysToShow = 90; // desktop
+  } else if (width >= 640) {
+    daysToShow = 60; // tablet
+  }
 
   return (
     <section className="max-w-4xl mx-auto p-4">
@@ -156,7 +177,7 @@ export default function ApplicationsList() {
                 </span>{" "}
                 | Subscribers: {app.subscribers.length}
               </p>
-              <StatusTimeline appId={app._id} />
+              <StatusTimeline appId={app._id} days={daysToShow} />
             </li>
           ))}
         </ul>

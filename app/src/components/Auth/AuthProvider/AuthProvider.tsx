@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import Loader from "../../Loader/Loader";
+import { useNotification } from "../../Notification/Notification";
 
 interface User {
   id: string;
@@ -40,12 +41,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { notify } = useNotification();
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     setUser(null);
+    notify("You have been logged out.", "info");
     router.push("/auth/");
-  }, [router]);
+  }, [router, notify]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -53,8 +56,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       try {
         const decoded = jwtDecode<JwtPayload>(token);
-
         if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+          notify("Session expired. Please login again.", "warning");
           logout();
         } else {
           setUser({
@@ -65,11 +68,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       } catch {
+        notify("Invalid token. Please login again.", "error");
         logout();
       }
     }
     setLoading(false);
-  }, [logout]);
+  }, [logout, notify]);
 
   const login = (token: string) => {
     localStorage.setItem("token", token);
@@ -79,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: decoded.email,
       username: decoded.username,
     });
+    notify(`Welcome back, ${decoded.username || decoded.email}!`, "success");
     router.push("/dashboard");
   };
 

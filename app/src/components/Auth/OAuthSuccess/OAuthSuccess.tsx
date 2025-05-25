@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useAuth } from "../../../components/Auth/AuthProvider/AuthProvider";
 import Loader from "../../Loader/Loader";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
+import { useNotification } from "../../Notification/Notification";
 
 export default function OAuthSuccessPage() {
   const router = useRouter();
   const params = useSearchParams();
   const { login } = useAuth();
+  const { notify } = useNotification();
 
   const token = params.get("token");
   const [showStuck, setShowStuck] = useState(false);
@@ -17,8 +19,10 @@ export default function OAuthSuccessPage() {
   useEffect(() => {
     if (token) {
       login(token);
+      notify("Logged in via Google!", "success");
       router.replace("/dashboard");
     } else {
+      notify("Login failed. No token provided.", "error");
       router.replace("/auth");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

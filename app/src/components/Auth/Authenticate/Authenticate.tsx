@@ -7,6 +7,7 @@ import type { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 import md5 from "md5";
+import { useNotification } from "../../Notification/Notification";
 
 export default function AuthenticatePage() {
   const { login } = useAuth();
@@ -18,6 +19,7 @@ export default function AuthenticatePage() {
     username: "",
     password: "",
   });
+  const { notify } = useNotification();
   const [error, setError] = useState<string | null>(null);
 
   const getGravatarUrl = (email: string) => {
@@ -37,9 +39,10 @@ export default function AuthenticatePage() {
       login(res.data.token);
     } catch (err: unknown) {
       const error = err as AxiosError<{ message: string }>;
-      setError(
+      notify(
         error?.response?.data?.message ||
-          "Login failed. Please check your credentials."
+          "Login failed. Please check your credentials.",
+        "error"
       );
     }
   };
@@ -54,13 +57,11 @@ export default function AuthenticatePage() {
         profilePicture,
         name: registerData.name,
       });
+      notify("Registration successful! You can now login.", "success");
       setActiveTab("login");
     } catch (err: unknown) {
       const error = err as AxiosError<{ message: string }>;
-      setError(
-        error?.response?.data?.message ||
-          "Registration failed. Please try again."
-      );
+      notify(error?.response?.data?.message || "Registration failed.", "error");
     }
   };
 
