@@ -5,14 +5,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-      </head>
-      <body>
-        <ProtectedRoute>{children}</ProtectedRoute>
-      </body>
-    </html>
-  );
+  return <ProtectedRoute>{children}</ProtectedRoute>;
 }
