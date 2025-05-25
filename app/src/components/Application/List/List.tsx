@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../../../utils/api";
 import { useAuth } from "../../Auth/AuthProvider/AuthProvider";
 import Loader from "../../Loader/Loader";
-import { useCallback } from "react";
 
 interface Application {
   _id: string;
@@ -55,7 +54,9 @@ function StatusTimeline({
 
   if (loading) return <Loader />;
   if (!statusBlocks.length)
-    return <div className="text-xs text-gray-400">No status history.</div>;
+    return (
+      <div className="text-sm text-gray-400">No status history available.</div>
+    );
 
   const groupedByDate: Record<string, StatusBlock[]> = {};
   for (const block of statusBlocks) {
@@ -64,9 +65,7 @@ function StatusTimeline({
     groupedByDate[date].push(block);
   }
 
-  const dailyStatus: { date: string; status: string }[] = Object.entries(
-    groupedByDate
-  )
+  const dailyStatus = Object.entries(groupedByDate)
     .map(([date, blocks]) => {
       const worst = blocks.reduce((worst, curr) =>
         STATUS_PRIORITY[curr.status] > STATUS_PRIORITY[worst.status]
@@ -82,8 +81,8 @@ function StatusTimeline({
   const lastDate = dailyStatus[dailyStatus.length - 1]?.date;
 
   return (
-    <div>
-      <div className="flex gap-1 my-2 overflow-x-auto">
+    <div className="w-full">
+      <div className="flex gap-1 my-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
         {dailyStatus.map(({ date, status }) => (
           <div
             key={date}
@@ -126,26 +125,42 @@ export default function ApplicationsList() {
   if (loading) return <Loader />;
 
   return (
-    <section>
-      <h2 className="text-xl font-bold mb-4">Your Subscribed Applications</h2>
-      <ul className="space-y-4">
-        {applications.map((app) => (
-          <li key={app._id} className="p-4 bg-gray-800 rounded">
-            <div className="flex justify-between items-center mb-1">
-              <div>
-                <span className="font-semibold">{app.name}</span>
-                <span className="ml-2 text-gray-400 text-sm">{app.url}</span>
+    <section className="max-w-4xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Your Subscribed Applications</h2>
+
+      {applications.length === 0 ? (
+        <p className="text-gray-400">
+          You&apos;re not subscribed to any applications.
+        </p>
+      ) : (
+        <ul className="space-y-6">
+          {applications.map((app) => (
+            <li
+              key={app._id}
+              className="p-4 bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">
+                    {app.name}
+                  </h3>
+                  <p className="text-sm text-gray-400 break-all">{app.url}</p>
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-gray-400 mb-1">
-              Owner:{" "}
-              {app.owner.username ? `@${app.owner.username}` : app.owner.email}{" "}
-              | Subscribers: {app.subscribers.length}
-            </div>
-            <StatusTimeline appId={app._id} days={30} />
-          </li>
-        ))}
-      </ul>
+              <p className="text-xs text-gray-400 mb-2">
+                Owner:{" "}
+                <span className="font-medium text-white">
+                  {app.owner.username
+                    ? `@${app.owner.username}`
+                    : app.owner.email}
+                </span>{" "}
+                | Subscribers: {app.subscribers.length}
+              </p>
+              <StatusTimeline appId={app._id} />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
