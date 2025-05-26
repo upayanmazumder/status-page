@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 router.post("/", authenticateJWT, createDashboard);
-router.get("/", authenticateJWT, listDashboards);
+router.get("/", listDashboards);
 router.put("/:dashboardId", authenticateJWT, updateDashboard);
 router.delete("/:dashboardId", authenticateJWT, deleteDashboard);
 router.post(

@@ -22,7 +22,7 @@ export default function OAuthSuccessPage() {
       notify("Logged in via Google!", "success");
       router.replace("/dashboard");
     } else {
-      notify("Login failed. No token provided.", "error");
+      notify("Login failed. Authentication token not found.", "error");
       router.replace("/auth");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

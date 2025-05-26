@@ -42,7 +42,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const removalQueue = useRef<NodeJS.Timeout[]>([]);
 
-  // Clean up timeouts on unmount
   useEffect(() => {
     return () => {
       removalQueue.current.forEach(clearTimeout);
@@ -53,10 +52,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const id = crypto.randomUUID();
     setNotifications((prev) => [...prev, { id, message, type }]);
 
-    // Schedule removal with incremental delay to stagger disappear
     const timeoutId = setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
-      // Remove this timeout from queue after execution
+
       removalQueue.current = removalQueue.current.filter(
         (t) => t !== timeoutId
       );
@@ -89,7 +87,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
               exit={{ opacity: 0, y: 20 }}
               transition={{
                 duration: 0.4,
-                delay: index * 0.1, // stagger enter animation by index
+                delay: index * 0.1,
               }}
               className={clsx(
                 "flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg text-white w-72",
