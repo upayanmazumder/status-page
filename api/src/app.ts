@@ -8,6 +8,7 @@ import passport from "./utils/passport";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import applicationRoutes from "./routes/applicationRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { checkAllApplicationsStatus } from "./jobs/applicationStatusChecker";
 
 setInterval(() => {
@@ -46,5 +47,6 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/applications", applicationRoutes);
+app.use("/dashboards", dashboardRoutes);
 
 export default app;
