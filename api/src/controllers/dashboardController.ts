@@ -14,14 +14,9 @@ export const createDashboard = async (req: Request, res: Response) => {
 
 export const listDashboards = async (req: Request, res: Response) => {
   const userId = (req as any).userId;
-  let dashboards;
-  if (userId) {
-    dashboards = await Dashboard.find({ owner: userId }).populate(
-      "applications"
-    );
-  } else {
-    dashboards = await Dashboard.find().populate("applications");
-  }
+  const dashboards = userId
+    ? await Dashboard.find({ owner: userId }).populate("applications")
+    : await Dashboard.find().populate("applications");
   res.json({ dashboards });
 };
 
