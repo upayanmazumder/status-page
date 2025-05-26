@@ -91,14 +91,6 @@ export default function DashboardDetailPage() {
                 <StatusTimeline appId={app._id} days={30} />
               </div>
             </div>
-            <a
-              href={app.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 sm:mt-0 sm:ml-4 text-blue-400 hover:underline"
-            >
-              Visit
-            </a>
           </li>
         ))}
       </ul>

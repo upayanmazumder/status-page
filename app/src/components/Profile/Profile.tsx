@@ -44,6 +44,7 @@ export default function Profile() {
     fetchUserData();
   }, [user]);
 
+  // If user details are loaded but username is missing
   useEffect(() => {
     if (!loading && userDetails && !userDetails.username) {
       router.replace("/auth/onboarding");
@@ -57,9 +58,9 @@ export default function Profile() {
   if (!userDetails) {
     return (
       <>
-        <h1 className="text-2xl font-semibold mb-4">Dashboard</h1>
+        <h1 className="text-2xl font-semibold mb-4">Profile</h1>
         <p className="mb-6">
-          ⚠️ Could not load user details. Please try again later.
+          Could not load user details. Please try again later.
         </p>
         <Logout />
       </>
