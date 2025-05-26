@@ -20,7 +20,7 @@ export async function checkAllApplicationsStatus() {
     try {
       const res = await axios.get(app.url, { timeout: 10000 });
       statusCode = res.status;
-      status = res.status === 200 ? "online" : "offline";
+      status = "online";
     } catch (err: any) {
       status = "offline";
       statusCode = err?.response?.status || 0;
