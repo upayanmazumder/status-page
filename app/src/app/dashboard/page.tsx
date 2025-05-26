@@ -1,9 +1,9 @@
-import Dashboard from "../../components/Dashboard/Dashboard";
+import ApplicationDashboard from "../../components/Dashboard/Dashboard";
 
-export default function DashboardPage() {
+export default function ApplicationDashboardPage() {
   return (
     <main>
-      <Dashboard />
+      <ApplicationDashboard />
     </main>
   );
 }

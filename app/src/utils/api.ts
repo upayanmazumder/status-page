@@ -4,7 +4,6 @@ const baseURL =
   process.env.NEXT_PUBLIC_ENV === "development"
     ? "http://localhost:5000"
     : "https://api.status-page.upayan.dev";
-console.log(" API Base URL:", baseURL);
 
 const instance = axios.create({
   baseURL,

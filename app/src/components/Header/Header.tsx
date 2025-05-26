@@ -170,7 +170,7 @@ const Header: React.FC = () => {
         </div>
 
         {user && (
-          <Link href="/dashboard" className="w-full sm:w-auto">
+          <Link href="/profile" className="w-full sm:w-auto">
             <div className="flex items-center gap-2 bg-gray-800 text-gray-300 px-3 py-1 rounded text-sm font-medium cursor-pointer hover:bg-gray-700 transition text-center truncate">
               {profilePicture && (
                 <Image

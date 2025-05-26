@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import api from "../../utils/api";
-import { useNotification } from "../Notification/Notification";
-import StatusTimeline from "../Application/List/StatusTimeline/StatusTimeline";
+import api from "../../../utils/api";
+import { useNotification } from "../../Notification/Notification";
+import StatusTimeline from "../../Application/List/StatusTimeline/StatusTimeline";
 
 interface Application {
   _id: string;
@@ -70,7 +70,7 @@ export default function DashboardDetailPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 text-gray-100 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+    <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">{dashboard.name}</h1>
       <h2 className="text-xl font-semibold mb-2">Applications</h2>
       <ul className="space-y-3">

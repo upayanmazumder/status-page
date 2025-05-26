@@ -6,7 +6,7 @@ import styles from "./GetStarted.module.css";
 
 const GetStarted = () => {
   return (
-    <Link href="/dashboard" passHref legacyBehavior>
+    <Link href="/profile" passHref legacyBehavior>
       <a className={styles.btnShine}>Get early access</a>
     </Link>
   );
