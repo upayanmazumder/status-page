@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
+import Navbar from "../components/Navbar/Navbar";
 import ServiceworkerRegister from "../components/ServiceworkerRegister/ServiceworkerRegister";
 import { AuthProvider } from "../components/Auth/AuthProvider/AuthProvider";
 import { NotificationProvider } from "@/components/Notification/Notification";
@@ -28,6 +29,7 @@ export default function RootLayout({
         <NotificationProvider>
           <AuthProvider>
             <Header />
+            <Navbar />
             {children}
           </AuthProvider>
           <Footer />
