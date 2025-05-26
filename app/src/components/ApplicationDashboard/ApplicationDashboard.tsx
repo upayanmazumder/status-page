@@ -206,6 +206,7 @@ const ApplicationDashboard = () => {
                   type="text"
                   value={editingDashboardName}
                   onChange={(e) => setEditingDashboardName(e.target.value)}
+                  placeholder="Edit dashboard name"
                   className="border border-gray-700 bg-gray-900 rounded px-2 py-1 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
                 <div className="flex gap-2 mt-2 sm:mt-0">
@@ -291,6 +292,7 @@ const ApplicationDashboard = () => {
           </ul>
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <select
+              aria-label="Select application to add"
               value={addingAppId}
               onChange={(e) => setAddingAppId(e.target.value)}
               className="border border-gray-700 bg-gray-900 rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
