@@ -22,10 +22,14 @@ export async function checkAllApplicationsStatus() {
       statusCode = res.status;
       status = "online";
     } catch (err: any) {
-      status = "offline";
-      statusCode = err?.response?.status || 0;
+      if (err?.response) {
+        status = "online";
+        statusCode = err.response.status;
+      } else {
+        status = "offline";
+        statusCode = 0;
+      }
     }
-
     const lastPeriod = app.statusHistory[app.statusHistory.length - 1];
 
     if (
