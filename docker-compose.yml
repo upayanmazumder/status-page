@@ -1,8 +1,15 @@
 services:
-  web:
-    image: ghcr.io/upayanmazumder/status-page:latest
+  app:
+    image: ghcr.io/upayanmazumder/status-page/app:latest
     ports:
       - "3000:3000"
+    env_file:
+      - ./app/.env
+    depends_on:
+      - api
+  api:
+    image: ghcr.io/upayanmazumder/status-page/api:latest
+    ports:
       - "5000:5000"
     env_file:
-      - .env
+      - ./api/.env
