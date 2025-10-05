@@ -1,18 +1,11 @@
-"use client";
+'use client';
 
-import {
-  useState,
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect,
-  useRef,
-} from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
-import clsx from "clsx";
+import { useState, createContext, useContext, ReactNode, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
+import clsx from 'clsx';
 
-export type NotificationType = "success" | "error" | "info" | "warning";
+export type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
 interface Notification {
   id: string;
@@ -24,16 +17,12 @@ interface NotificationContextType {
   notify: (message: string, type?: NotificationType) => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error(
-      "useNotification must be used within a NotificationProvider"
-    );
+    throw new Error('useNotification must be used within a NotificationProvider');
   }
   return context;
 };
@@ -48,23 +37,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const notify = (message: string, type: NotificationType = "info") => {
+  const notify = (message: string, type: NotificationType = 'info') => {
     const id = crypto.randomUUID();
-    setNotifications((prev) => [...prev, { id, message, type }]);
+    setNotifications(prev => [...prev, { id, message, type }]);
 
-    const timeoutId = setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    const timeoutId = setTimeout(
+      () => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
 
-      removalQueue.current = removalQueue.current.filter(
-        (t) => t !== timeoutId
-      );
-    }, 4000 + notifications.length * 300);
+        removalQueue.current = removalQueue.current.filter(t => t !== timeoutId);
+      },
+      4000 + notifications.length * 300
+    );
 
     removalQueue.current.push(timeoutId);
   };
 
   const removeNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
@@ -90,12 +80,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 delay: index * 0.1,
               }}
               className={clsx(
-                "flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg text-white w-72",
+                'flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg text-white w-72',
                 {
-                  "bg-green-600": n.type === "success",
-                  "bg-red-600": n.type === "error",
-                  "bg-blue-600": n.type === "info",
-                  "bg-yellow-500": n.type === "warning",
+                  'bg-green-600': n.type === 'success',
+                  'bg-red-600': n.type === 'error',
+                  'bg-blue-600': n.type === 'info',
+                  'bg-yellow-500': n.type === 'warning',
                 }
               )}
             >

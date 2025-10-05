@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
         src="/404.webp"
         width={1000}
         height={600}
-        style={{ width: "100%", height: "auto" }}
+        style={{ width: '100%', height: 'auto' }}
         alt="Not Found Image"
       />
     </main>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Logout from "../Auth/Logout/Logout";
-import { useAuth } from "../Auth/AuthProvider/AuthProvider";
-import api from "../../utils/api";
-import Loader from "../Loader/Loader";
-import Image from "next/image";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Logout from '../Auth/Logout/Logout';
+import { useAuth } from '../Auth/AuthProvider/AuthProvider';
+import api from '../../utils/api';
+import Loader from '../Loader/Loader';
+import Image from 'next/image';
 
 interface UserDetails {
   email: string;
@@ -32,7 +32,7 @@ export default function Profile() {
 
     const fetchUserData = async () => {
       try {
-        const res = await api.get("/user/profile");
+        const res = await api.get('/user/profile');
         setUserDetails(res.data.user);
       } catch {
         setUserDetails(null);
@@ -47,7 +47,7 @@ export default function Profile() {
   // If user details are loaded but username is missing
   useEffect(() => {
     if (!loading && userDetails && !userDetails.username) {
-      router.replace("/auth/onboarding");
+      router.replace('/auth/onboarding');
     }
   }, [loading, userDetails, router]);
 
@@ -59,9 +59,7 @@ export default function Profile() {
     return (
       <>
         <h1 className="text-2xl font-semibold mb-4">Profile</h1>
-        <p className="mb-6">
-          Could not load user details. Please try again later.
-        </p>
+        <p className="mb-6">Could not load user details. Please try again later.</p>
         <Logout />
       </>
     );
@@ -84,8 +82,8 @@ export default function Profile() {
             {userDetails.name
               ? userDetails.name.charAt(0).toUpperCase()
               : userDetails.username
-              ? userDetails.username.charAt(0).toUpperCase()
-              : "U"}
+                ? userDetails.username.charAt(0).toUpperCase()
+                : 'U'}
           </div>
         )}
 
@@ -94,8 +92,8 @@ export default function Profile() {
             {userDetails.name
               ? userDetails.name
               : userDetails.username
-              ? `@${userDetails.username}`
-              : userDetails.email}
+                ? `@${userDetails.username}`
+                : userDetails.email}
           </p>
           <p className="text-indigo-300">{userDetails.email}</p>
         </div>
@@ -104,9 +102,7 @@ export default function Profile() {
       <section className="grid grid-cols-2 gap-4 text-indigo-200 text-sm">
         {userDetails.createdAt && (
           <div
-            className={`bg-indigo-900 p-3 rounded-md ${
-              !userDetails.googleId ? "col-span-2" : ""
-            }`}
+            className={`bg-indigo-900 p-3 rounded-md ${!userDetails.googleId ? 'col-span-2' : ''}`}
           >
             <strong className="block text-indigo-400">Joined</strong>
             <span>{new Date(userDetails.createdAt).toLocaleDateString()}</span>
@@ -128,7 +124,7 @@ export default function Profile() {
 
       <section className="mt-8">
         <button
-          onClick={() => router.push("/profile/applications")}
+          onClick={() => router.push('/profile/applications')}
           className="ml-2 text-indigo-400 hover:underline"
         >
           View Applications

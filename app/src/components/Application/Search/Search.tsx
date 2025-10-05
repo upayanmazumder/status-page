@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useMemo, useCallback } from "react";
-import api from "../../../utils/api";
-import { useAuth } from "../../Auth/AuthProvider/AuthProvider";
-import { useNotification } from "../../Notification/Notification";
-import Loader from "../../Loader/Loader";
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import api from '../../../utils/api';
+import { useAuth } from '../../Auth/AuthProvider/AuthProvider';
+import { useNotification } from '../../Notification/Notification';
+import Loader from '../../Loader/Loader';
 
 interface Application {
   _id: string;
@@ -19,15 +19,11 @@ interface ApplicationsSearchProps {
   onSubscribedChange?: () => void;
 }
 
-export default function ApplicationsSearch({
-  onSubscribedChange,
-}: ApplicationsSearchProps) {
+export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsSearchProps) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "subscribers" | "newest">(
-    "name"
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'subscribers' | 'newest'>('name');
   const [filterOwned, setFilterOwned] = useState(false);
   const [subscribingIds, setSubscribingIds] = useState<Set<string>>(new Set());
   const { user } = useAuth();
@@ -36,10 +32,10 @@ export default function ApplicationsSearch({
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/applications");
+      const res = await api.get('/applications');
       setApplications(res.data.applications || []);
     } catch {
-      notify("Failed to load applications", "error");
+      notify('Failed to load applications', 'error');
     } finally {
       setLoading(false);
     }
@@ -53,40 +49,30 @@ export default function ApplicationsSearch({
     async (appId: string, isSubscribed: boolean) => {
       if (subscribingIds.has(appId)) return;
 
-      setSubscribingIds((prev) => new Set(prev).add(appId));
+      setSubscribingIds(prev => new Set(prev).add(appId));
       try {
-        const endpoint = `/applications/${appId}/${
-          isSubscribed ? "unsubscribe" : "subscribe"
-        }`;
+        const endpoint = `/applications/${appId}/${isSubscribed ? 'unsubscribe' : 'subscribe'}`;
         await api.post(endpoint);
 
         // Update local state
-        setApplications((prev) =>
-          prev.map((app) => {
+        setApplications(prev =>
+          prev.map(app => {
             if (app._id === appId) {
               const newSubscribers = isSubscribed
-                ? app.subscribers.filter((s) => s.email !== user?.email)
-                : [
-                    ...app.subscribers,
-                    { email: user!.email, username: user?.username },
-                  ];
+                ? app.subscribers.filter(s => s.email !== user?.email)
+                : [...app.subscribers, { email: user!.email, username: user?.username }];
               return { ...app, subscribers: newSubscribers };
             }
             return app;
           })
         );
 
-        notify(
-          isSubscribed
-            ? "Unsubscribed successfully"
-            : "Subscribed successfully",
-          "success"
-        );
+        notify(isSubscribed ? 'Unsubscribed successfully' : 'Subscribed successfully', 'success');
         onSubscribedChange?.();
       } catch {
-        notify("Failed to update subscription", "error");
+        notify('Failed to update subscription', 'error');
       } finally {
-        setSubscribingIds((prev) => {
+        setSubscribingIds(prev => {
           const newSet = new Set(prev);
           newSet.delete(appId);
           return newSet;
@@ -97,15 +83,12 @@ export default function ApplicationsSearch({
   );
 
   const filteredAndSortedApplications = useMemo(() => {
-    const filtered = applications.filter((app) => {
+    const filtered = applications.filter(app => {
       const matchesSearch =
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.owner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (app.owner.username
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ??
-          false);
+        (app.owner.username?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
 
       const matchesFilter = !filterOwned || app.owner.email === user?.email;
 
@@ -115,13 +98,10 @@ export default function ApplicationsSearch({
     // Sort applications
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case "subscribers":
+        case 'subscribers':
           return b.subscribers.length - a.subscribers.length;
-        case "newest":
-          return (
-            new Date(b.createdAt || 0).getTime() -
-            new Date(a.createdAt || 0).getTime()
-          );
+        case 'newest':
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         default: // name
           return a.name.localeCompare(b.name);
       }
@@ -131,8 +111,7 @@ export default function ApplicationsSearch({
   }, [applications, searchQuery, sortBy, filterOwned, user?.email]);
 
   const getApplicationStats = (app: Application) => {
-    const isSubscribed =
-      !!user && app.subscribers.some((s) => s.email === user.email);
+    const isSubscribed = !!user && app.subscribers.some(s => s.email === user.email);
     const isOwner = app.owner.email === user?.email;
     const subscriberCount = app.subscribers.length;
 
@@ -154,10 +133,7 @@ export default function ApplicationsSearch({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search Input */}
           <div className="md:col-span-2">
-            <label
-              htmlFor="search"
-              className="block text-sm font-medium text-gray-300 mb-2"
-            >
+            <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-2">
               Search Applications
             </label>
             <input
@@ -165,23 +141,20 @@ export default function ApplicationsSearch({
               type="text"
               placeholder="Search by name, URL, or owner..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             />
           </div>
 
           {/* Sort Options */}
           <div>
-            <label
-              htmlFor="sort"
-              className="block text-sm font-medium text-gray-300 mb-2"
-            >
+            <label htmlFor="sort" className="block text-sm font-medium text-gray-300 mb-2">
               Sort By
             </label>
             <select
               id="sort"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
               className="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
               <option value="name">Name (A-Z)</option>
@@ -197,7 +170,7 @@ export default function ApplicationsSearch({
             <input
               type="checkbox"
               checked={filterOwned}
-              onChange={(e) => setFilterOwned(e.target.checked)}
+              onChange={e => setFilterOwned(e.target.checked)}
               className="mr-2 rounded text-blue-600 focus:ring-blue-500 focus:ring-2"
             />
             Show only my applications
@@ -209,11 +182,11 @@ export default function ApplicationsSearch({
       <div className="flex items-center justify-between text-sm text-gray-400">
         <span>
           {filteredAndSortedApplications.length} application
-          {filteredAndSortedApplications.length !== 1 ? "s" : ""} found
+          {filteredAndSortedApplications.length !== 1 ? 's' : ''} found
         </span>
         {searchQuery && (
           <button
-            onClick={() => setSearchQuery("")}
+            onClick={() => setSearchQuery('')}
             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
           >
             Clear search
@@ -239,20 +212,17 @@ export default function ApplicationsSearch({
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-300 mb-2">
-            No applications found
-          </h3>
+          <h3 className="text-lg font-medium text-gray-300 mb-2">No applications found</h3>
           <p className="text-gray-400">
             {searchQuery
-              ? "Try adjusting your search criteria"
-              : "No applications available at the moment"}
+              ? 'Try adjusting your search criteria'
+              : 'No applications available at the moment'}
           </p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAndSortedApplications.map((app) => {
-            const { isSubscribed, isOwner, subscriberCount } =
-              getApplicationStats(app);
+          {filteredAndSortedApplications.map(app => {
+            const { isSubscribed, isOwner, subscriberCount } = getApplicationStats(app);
             const isProcessing = subscribingIds.has(app._id);
 
             return (
@@ -262,50 +232,36 @@ export default function ApplicationsSearch({
               >
                 <div className="mb-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-white truncate pr-2">
-                      {app.name}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-white truncate pr-2">{app.name}</h3>
                     {isOwner && (
                       <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
                         Owner
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-400 break-all mb-2">
-                    {app.url}
-                  </p>
+                  <p className="text-sm text-gray-400 break-all mb-2">{app.url}</p>
                   <div className="text-xs text-gray-500">
-                    <p>
-                      Owner:{" "}
-                      {app.owner.username
-                        ? `@${app.owner.username}`
-                        : app.owner.email}
-                    </p>
+                    <p>Owner: {app.owner.username ? `@${app.owner.username}` : app.owner.email}</p>
                     <p className="mt-1">
                       {subscriberCount} subscriber
-                      {subscriberCount !== 1 ? "s" : ""}
+                      {subscriberCount !== 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
 
                 {!isOwner && (
                   <button
-                    onClick={() =>
-                      handleSubscriptionToggle(app._id, isSubscribed)
-                    }
+                    onClick={() => handleSubscriptionToggle(app._id, isSubscribed)}
                     disabled={isProcessing}
                     className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed ${
                       isSubscribed
-                        ? "bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white"
-                        : "bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white"
-                    } ${isProcessing ? "opacity-75" : ""}`}
+                        ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white'
+                        : 'bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white'
+                    } ${isProcessing ? 'opacity-75' : ''}`}
                   >
                     {isProcessing ? (
                       <span className="flex items-center justify-center space-x-2">
-                        <svg
-                          className="animate-spin h-4 w-4"
-                          viewBox="0 0 24 24"
-                        >
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                           <circle
                             className="opacity-25"
                             cx="12"
@@ -323,9 +279,9 @@ export default function ApplicationsSearch({
                         <span>Processing...</span>
                       </span>
                     ) : isSubscribed ? (
-                      "Unsubscribe"
+                      'Unsubscribe'
                     ) : (
-                      "Subscribe"
+                      'Subscribe'
                     )}
                   </button>
                 )}

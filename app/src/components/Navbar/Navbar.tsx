@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, User, Settings, LayoutDashboard } from "lucide-react";
-import clsx from "clsx";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, User, Settings, LayoutDashboard } from 'lucide-react';
+import clsx from 'clsx';
 
 const links = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/profile", icon: User, label: "Profile" },
+  { href: '/', icon: Home, label: 'Home' },
+  { href: '/profile', icon: User, label: 'Profile' },
   {
-    href: "/profile/applications",
+    href: '/profile/applications',
     icon: Settings,
-    label: "Applications",
+    label: 'Applications',
   },
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
 ];
 
 export default function Navbar() {
@@ -27,14 +27,12 @@ export default function Navbar() {
             <Link
               href={href}
               className={clsx(
-                "flex flex-col sm:flex-row items-center sm:gap-2 px-2 py-1 sm:px-3 rounded transition hover:bg-gray-800",
-                pathname === href && "bg-gray-800 text-green-400"
+                'flex flex-col sm:flex-row items-center sm:gap-2 px-2 py-1 sm:px-3 rounded transition hover:bg-gray-800',
+                pathname === href && 'bg-gray-800 text-green-400'
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs sm:text-sm hidden sm:inline">
-                {label}
-              </span>
+              <span className="text-xs sm:text-sm hidden sm:inline">{label}</span>
             </Link>
           </li>
         ))}

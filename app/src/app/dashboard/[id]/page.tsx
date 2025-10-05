@@ -1,4 +1,4 @@
-import ApplicationDashboardDetail from "../../../components/Dashboard/Detail/Detail";
+import ApplicationDashboardDetail from '../../../components/Dashboard/Detail/Detail';
 
 export default function ApplicationDashboardPage() {
   return (

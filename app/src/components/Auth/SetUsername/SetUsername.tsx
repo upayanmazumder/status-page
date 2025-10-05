@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import api from "../../../utils/api";
-import { useAuth } from "../AuthProvider/AuthProvider";
-import axios from "axios";
-import Loading from "../../Loader/Loader";
-import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle } from "lucide-react";
-import { useNotification } from "../../Notification/Notification";
+import { useState } from 'react';
+import api from '../../../utils/api';
+import { useAuth } from '../AuthProvider/AuthProvider';
+import axios from 'axios';
+import Loading from '../../Loader/Loader';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle } from 'lucide-react';
+import { useNotification } from '../../Notification/Notification';
 
 export default function SetUsername() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { notify } = useNotification();
@@ -21,24 +21,21 @@ export default function SetUsername() {
     setError(null);
 
     if (/\s/.test(username)) {
-      setError("Username must not contain spaces");
+      setError('Username must not contain spaces');
       return;
     }
 
     try {
-      const res = await api.post("/auth/username", { username });
+      const res = await api.post('/auth/username', { username });
       login(res.data.token);
-      notify("Username set successfully!", "success");
+      notify('Username set successfully!', 'success');
       setSuccess(true);
       setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        notify(
-          err.response?.data?.message || "Failed to set username",
-          "error"
-        );
+        notify(err.response?.data?.message || 'Failed to set username', 'error');
       } else {
-        notify("Unexpected error occurred", "error");
+        notify('Unexpected error occurred', 'error');
       }
     }
   };
@@ -58,13 +55,13 @@ export default function SetUsername() {
       <div>
         <input
           className={`w-full px-4 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-            error ? "ring-2 ring-red-500" : ""
+            error ? 'ring-2 ring-red-500' : ''
           }`}
           value={username}
-          onChange={(e) => {
+          onChange={e => {
             setUsername(e.target.value);
             if (/\s/.test(e.target.value)) {
-              setError("Username must not contain spaces");
+              setError('Username must not contain spaces');
             } else {
               setError(null);
             }

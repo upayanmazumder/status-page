@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import api from "../../../utils/api";
-import { useAuth } from "../../Auth/AuthProvider/AuthProvider";
-import { useNotification } from "../../Notification/Notification";
-import Loader from "../../Loader/Loader";
-import StatusTimeline from "./StatusTimeline/StatusTimeline";
-import useWindowWidth from "../../../utils/useWindowWidth";
+import { useEffect, useState, useCallback } from 'react';
+import api from '../../../utils/api';
+import { useAuth } from '../../Auth/AuthProvider/AuthProvider';
+import { useNotification } from '../../Notification/Notification';
+import Loader from '../../Loader/Loader';
+import StatusTimeline from './StatusTimeline/StatusTimeline';
+import useWindowWidth from '../../../utils/useWindowWidth';
 
 interface Application {
   _id: string;
@@ -16,16 +16,14 @@ interface Application {
   subscribers: { email: string; username?: string }[];
   createdAt?: string;
   lastChecked?: string;
-  currentStatus?: "online" | "offline" | "unknown";
+  currentStatus?: 'online' | 'offline' | 'unknown';
 }
 
 export default function ApplicationsList() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [unsubscribingIds, setUnsubscribingIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [unsubscribingIds, setUnsubscribingIds] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { notify } = useNotification();
   const width = useWindowWidth();
@@ -36,13 +34,13 @@ export default function ApplicationsList() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("/applications");
+      const res = await api.get('/applications');
       const subscribedApps = res.data.applications.filter((app: Application) =>
-        app.subscribers.some((s) => s.email === user.email)
+        app.subscribers.some(s => s.email === user.email)
       );
       setApplications(subscribedApps);
     } catch {
-      setError("Failed to load your applications. Please try again.");
+      setError('Failed to load your applications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,15 +50,15 @@ export default function ApplicationsList() {
     async (appId: string, appName: string) => {
       if (unsubscribingIds.has(appId)) return;
 
-      setUnsubscribingIds((prev) => new Set(prev).add(appId));
+      setUnsubscribingIds(prev => new Set(prev).add(appId));
       try {
         await api.post(`/applications/${appId}/unsubscribe`);
-        setApplications((prev) => prev.filter((app) => app._id !== appId));
-        notify(`Unsubscribed from "${appName}"`, "success");
+        setApplications(prev => prev.filter(app => app._id !== appId));
+        notify(`Unsubscribed from "${appName}"`, 'success');
       } catch {
-        notify("Failed to unsubscribe. Please try again.", "error");
+        notify('Failed to unsubscribe. Please try again.', 'error');
       } finally {
-        setUnsubscribingIds((prev) => {
+        setUnsubscribingIds(prev => {
           const newSet = new Set(prev);
           newSet.delete(appId);
           return newSet;
@@ -79,7 +77,7 @@ export default function ApplicationsList() {
   if (width >= 1536) {
     daysToShow = 90; // 2xl screens
   } else if (width >= 1280) {
-    daysToShow = 75; // xl screens 
+    daysToShow = 75; // xl screens
   } else if (width >= 1024) {
     daysToShow = 60; // lg screens
   } else if (width >= 768) {
@@ -152,25 +150,49 @@ export default function ApplicationsList() {
           No Subscribed Applications
         </h3>
         <p className="text-gray-400 mb-6 sm:mb-8 text-sm sm:text-base max-w-md mx-auto">
-          You haven&apos;t subscribed to any applications yet. Browse available
-          applications to get started.
+          You haven&apos;t subscribed to any applications yet. Browse available applications to get
+          started.
         </p>
         <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-500 max-w-lg mx-auto">
           <p className="flex items-center justify-center sm:justify-start gap-2">
-            <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 text-green-400 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
             </svg>
             Subscribe to applications to monitor their status
           </p>
           <p className="flex items-center justify-center sm:justify-start gap-2">
-            <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 text-blue-400 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
             </svg>
             View historical uptime data and trends
           </p>
           <p className="flex items-center justify-center sm:justify-start gap-2">
-            <svg className="w-4 h-4 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            <svg
+              className="w-4 h-4 text-yellow-400 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
             </svg>
             Get notified about service disruptions
           </p>
@@ -191,19 +213,13 @@ export default function ApplicationsList() {
         </div>
         <div className="bg-gray-800 rounded-lg p-4 sm:p-5 lg:p-6 border border-gray-700 hover:border-gray-600 transition-colors duration-200">
           <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-400 mb-1">
-            {
-              applications.filter((app) => app.currentStatus === "online")
-                .length
-            }
+            {applications.filter(app => app.currentStatus === 'online').length}
           </div>
           <div className="text-sm sm:text-base text-gray-400">Online</div>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 sm:p-5 lg:p-6 border border-gray-700 hover:border-gray-600 transition-colors duration-200">
           <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-red-400 mb-1">
-            {
-              applications.filter((app) => app.currentStatus === "offline")
-                .length
-            }
+            {applications.filter(app => app.currentStatus === 'offline').length}
           </div>
           <div className="text-sm sm:text-base text-gray-400">Offline</div>
         </div>
@@ -211,7 +227,7 @@ export default function ApplicationsList() {
 
       {/* Applications List */}
       <div className="space-y-4 md:space-y-6">
-        {applications.map((app) => {
+        {applications.map(app => {
           const isUnsubscribing = unsubscribingIds.has(app._id);
 
           return (
@@ -230,23 +246,23 @@ export default function ApplicationsList() {
                       <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                         <div
                           className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${
-                            app.currentStatus === "online"
-                              ? "bg-green-400"
-                              : app.currentStatus === "offline"
-                              ? "bg-red-400"
-                              : "bg-gray-400"
+                            app.currentStatus === 'online'
+                              ? 'bg-green-400'
+                              : app.currentStatus === 'offline'
+                                ? 'bg-red-400'
+                                : 'bg-gray-400'
                           }`}
                         />
                         <span
                           className={`font-medium capitalize ${
-                            app.currentStatus === "online"
-                              ? "text-green-400"
-                              : app.currentStatus === "offline"
-                              ? "text-red-400"
-                              : "text-gray-400"
+                            app.currentStatus === 'online'
+                              ? 'text-green-400'
+                              : app.currentStatus === 'offline'
+                                ? 'text-red-400'
+                                : 'text-gray-400'
                           }`}
                         >
-                          {app.currentStatus || "unknown"}
+                          {app.currentStatus || 'unknown'}
                         </span>
                       </div>
                     </div>
@@ -257,25 +273,42 @@ export default function ApplicationsList() {
                       </p>
                       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 sm:w-4 sm:h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          Owner:{" "}
-                          {app.owner.username
-                            ? `@${app.owner.username}`
-                            : app.owner.email}
+                          Owner: {app.owner.username ? `@${app.owner.username}` : app.owner.email}
                         </span>
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <svg
+                            className="w-3 h-3 sm:w-4 sm:h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
                           </svg>
                           {app.subscribers.length} subscriber
-                          {app.subscribers.length !== 1 ? "s" : ""}
+                          {app.subscribers.length !== 1 ? 's' : ''}
                         </span>
                         {app.lastChecked && (
                           <span className="flex items-center gap-1">
-                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            <svg
+                              className="w-3 h-3 sm:w-4 sm:h-4"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             <span className="hidden sm:inline">Last checked: </span>
                             <span className="sm:hidden">Checked: </span>
@@ -283,7 +316,7 @@ export default function ApplicationsList() {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',
-                              minute: '2-digit'
+                              minute: '2-digit',
                             })}
                           </span>
                         )}
@@ -375,7 +408,9 @@ export default function ApplicationsList() {
                     Status History ({daysToShow} days)
                   </h4>
                   <p className="text-xs sm:text-sm text-gray-500">
-                    <span className="hidden sm:inline">Hover over blocks to see detailed status information</span>
+                    <span className="hidden sm:inline">
+                      Hover over blocks to see detailed status information
+                    </span>
                     <span className="sm:hidden">Tap blocks for status details</span>
                   </p>
                 </div>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import api from "../../../utils/api";
-import { useNotification } from "../../Notification/Notification";
-import StatusTimeline from "../../Application/List/StatusTimeline/StatusTimeline";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import api from '../../../utils/api';
+import { useNotification } from '../../Notification/Notification';
+import StatusTimeline from '../../Application/List/StatusTimeline/StatusTimeline';
 
 interface Application {
   _id: string;
@@ -21,11 +21,7 @@ interface Dashboard {
 export default function DashboardDetailPage() {
   const params = useParams();
   const dashboardId =
-    typeof params.id === "string"
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : "";
+    typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
   const { notify } = useNotification();
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,12 +36,12 @@ export default function DashboardDetailPage() {
         } catch {
           const res = await api.get(`/dashboards`);
           const dashboards: Dashboard[] = res.data.dashboards || [];
-          found = dashboards.find((d) => d._id === dashboardId);
+          found = dashboards.find(d => d._id === dashboardId);
         }
         setDashboard(found || null);
-        if (!found) notify("Dashboard not found", "error");
+        if (!found) notify('Dashboard not found', 'error');
       } catch {
-        notify("Failed to load dashboard", "error");
+        notify('Failed to load dashboard', 'error');
       } finally {
         setLoading(false);
       }
@@ -77,7 +73,7 @@ export default function DashboardDetailPage() {
         {dashboard.applications.length === 0 && (
           <li className="text-gray-400">No applications in this dashboard.</li>
         )}
-        {dashboard.applications.map((app) => (
+        {dashboard.applications.map(app => (
           <li
             key={app._id}
             className="border border-gray-700 rounded px-4 py-3 bg-gray-800 flex flex-col sm:flex-row sm:items-center justify-between transition hover:scale-[1.01] hover:shadow-lg"

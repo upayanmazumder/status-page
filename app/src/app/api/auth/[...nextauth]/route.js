@@ -1,6 +1,6 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import jwt from "jsonwebtoken";
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import jwt from 'jsonwebtoken';
 
 const handler = NextAuth({
   providers: [
@@ -11,7 +11,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, account, user }) {
@@ -23,7 +23,7 @@ const handler = NextAuth({
         token.accessToken = jwt.sign(
           { sub: token.sub, email: user.email },
           process.env.NEXTAUTH_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: '1h' }
         );
       }
 
