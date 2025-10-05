@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'STATUS-PAGE-V2.0.0';
+const CACHE_NAME = 'STATUS-PAGE-V2.0.1';
 const CORE_ASSETS = [
   '/',
   '/offline',
