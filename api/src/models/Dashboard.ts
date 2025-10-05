@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types, Document } from "mongoose";
+import mongoose, { Schema, Types, Document } from 'mongoose';
 
 export interface IDashboard extends Document {
   name: string;
@@ -11,13 +11,10 @@ export interface IDashboard extends Document {
 const DashboardSchema = new Schema<IDashboard>(
   {
     name: { type: String, required: true },
-    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    applications: [{ type: Schema.Types.ObjectId, ref: "Application" }],
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    applications: [{ type: Schema.Types.ObjectId, ref: 'Application' }],
   },
   { timestamps: true }
 );
 
-export const Dashboard = mongoose.model<IDashboard>(
-  "Dashboard",
-  DashboardSchema
-);
+export const Dashboard = mongoose.model<IDashboard>('Dashboard', DashboardSchema);

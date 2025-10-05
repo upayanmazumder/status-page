@@ -1,17 +1,10 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useEffect,
-  useState,
-  useContext,
-  ReactNode,
-  useCallback,
-} from "react";
-import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-import Loader from "../../Loader/Loader";
-import { useNotification } from "../../Notification/Notification";
+import { createContext, useEffect, useState, useContext, ReactNode, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+import Loader from '../../Loader/Loader';
+import { useNotification } from '../../Notification/Notification';
 
 interface User {
   id: string;
@@ -44,20 +37,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { notify } = useNotification();
 
   const logout = useCallback(() => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     setUser(null);
-    notify("You have been logged out.", "info");
-    router.push("/auth/");
+    notify('You have been logged out.', 'info');
+    router.push('/auth/');
   }, [router, notify]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const token = localStorage.getItem("token");
+    if (typeof window === 'undefined') return;
+    const token = localStorage.getItem('token');
     if (token) {
       try {
         const decoded = jwtDecode<JwtPayload>(token);
         if (decoded.exp && Date.now() >= decoded.exp * 1000) {
-          notify("Session expired. Please login again.", "warning");
+          notify('Session expired. Please login again.', 'warning');
           logout();
         } else {
           setUser({
@@ -68,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       } catch {
-        notify("Invalid token. Please login again.", "error");
+        notify('Invalid token. Please login again.', 'error');
         logout();
       }
     }
@@ -76,15 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [logout, notify]);
 
   const login = (token: string) => {
-    localStorage.setItem("token", token);
+    localStorage.setItem('token', token);
     const decoded = jwtDecode<JwtPayload>(token);
     setUser({
       id: decoded.id,
       email: decoded.email,
       username: decoded.username,
     });
-    notify(`Welcome back, ${decoded.username || decoded.email}!`, "success");
-    router.push("/dashboard");
+    notify(`Welcome back, ${decoded.username || decoded.email}!`, 'success');
+    router.push('/dashboard');
   };
 
   return (
@@ -102,6 +95,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

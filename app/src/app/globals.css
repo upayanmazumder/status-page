@@ -1,25 +1,23 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @font-face {
-  font-family: "RedHatDisplay";
-  src: url("../../public/fonts/RedHatDisplay-VariableFont_wght.ttf")
-    format("truetype");
+  font-family: 'RedHatDisplay';
+  src: url('../../public/fonts/RedHatDisplay-VariableFont_wght.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: "RedHatMono";
-  src: url("../../public/fonts/RedHatMono-VariableFont_wght.ttf")
-    format("truetype");
+  font-family: 'RedHatMono';
+  src: url('../../public/fonts/RedHatMono-VariableFont_wght.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: "Montserrat-Regular";
-  src: url("../../public/fonts/Montserrat-Regular.ttf") format("truetype");
+  font-family: 'Montserrat-Regular';
+  src: url('../../public/fonts/Montserrat-Regular.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: "Montserrat-Bold";
-  src: url("../../public/fonts/Montserrat-Bold.ttf") format("truetype");
+  font-family: 'Montserrat-Bold';
+  src: url('../../public/fonts/Montserrat-Bold.ttf') format('truetype');
 }
 
 :root {
@@ -29,11 +27,7 @@
   --header-background-color: var(--background);
   --footer-background-color: #121212bd;
   --sidebar-background-color: #0e0e0ebb;
-  --card-background: linear-gradient(
-    145deg,
-    rgba(10, 25, 47, 0.7),
-    rgba(2, 12, 27, 0.7)
-  );
+  --card-background: linear-gradient(145deg, rgba(10, 25, 47, 0.7), rgba(2, 12, 27, 0.7));
 
   --screen-horizontal-margin: clamp(1rem, 5vw, 4rem);
   --screen-vertical-margin: 0;
@@ -97,7 +91,7 @@ body {
   overflow-x: hidden;
   background: var(--background, rgb(15, 15, 15));
   color: var(--foreground);
-  font-family: "Montserrat-Regular", "RedHatDisplay", system-ui, sans-serif;
+  font-family: 'Montserrat-Regular', 'RedHatDisplay', system-ui, sans-serif;
   font-size: var(--font-size-medium);
   font-weight: var(--font-weight-normal);
   line-height: 1.6;
@@ -157,7 +151,7 @@ button:hover {
   .scrollbar-thin::-webkit-scrollbar {
     height: 4px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #6b7280;
   }
@@ -172,7 +166,9 @@ button:hover {
 
 /* Improve touch targets on mobile */
 @media (max-width: 768px) {
-  button, a[role="button"], [role="button"] {
+  button,
+  a[role='button'],
+  [role='button'] {
     min-height: 44px;
     min-width: 44px;
   }

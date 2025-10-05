@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuth } from "../Auth/AuthProvider/AuthProvider";
-import { useNotification } from "../Notification/Notification";
-import api from "../../utils/api";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../Auth/AuthProvider/AuthProvider';
+import { useNotification } from '../Notification/Notification';
+import api from '../../utils/api';
+import { useRouter } from 'next/navigation';
 
 interface Application {
   _id: string;
@@ -25,38 +25,32 @@ const ApplicationDashboard = () => {
 
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [newDashboardName, setNewDashboardName] = useState("");
-  const [editingDashboardId, setEditingDashboardId] = useState<string | null>(
-    null
-  );
-  const [editingDashboardName, setEditingDashboardName] = useState("");
-  const [selectedDashboard, setSelectedDashboard] = useState<Dashboard | null>(
-    null
-  );
-  const [addingAppId, setAddingAppId] = useState<string>("");
+  const [newDashboardName, setNewDashboardName] = useState('');
+  const [editingDashboardId, setEditingDashboardId] = useState<string | null>(null);
+  const [editingDashboardName, setEditingDashboardName] = useState('');
+  const [selectedDashboard, setSelectedDashboard] = useState<Dashboard | null>(null);
+  const [addingAppId, setAddingAppId] = useState<string>('');
 
   const fetchDashboards = async () => {
     try {
-      const res = await api.get("/dashboards");
+      const res = await api.get('/dashboards');
       setDashboards(res.data.dashboards || []);
 
       if (selectedDashboard) {
-        const updated = res.data.dashboards.find(
-          (d: Dashboard) => d._id === selectedDashboard._id
-        );
+        const updated = res.data.dashboards.find((d: Dashboard) => d._id === selectedDashboard._id);
         setSelectedDashboard(updated || null);
       }
     } catch {
-      notify("Failed to load dashboards", "error");
+      notify('Failed to load dashboards', 'error');
     }
   };
 
   const fetchApplications = async () => {
     try {
-      const res = await api.get("/applications");
+      const res = await api.get('/applications');
       setApplications(res.data.applications || []);
     } catch {
-      notify("Failed to load applications", "error");
+      notify('Failed to load applications', 'error');
     }
   };
 
@@ -72,12 +66,12 @@ const ApplicationDashboard = () => {
     e.preventDefault();
     if (!newDashboardName.trim()) return;
     try {
-      await api.post("/dashboards", { name: newDashboardName });
-      setNewDashboardName("");
-      notify("Dashboard created!", "success");
+      await api.post('/dashboards', { name: newDashboardName });
+      setNewDashboardName('');
+      notify('Dashboard created!', 'success');
       fetchDashboards();
     } catch {
-      notify("Failed to create dashboard", "error");
+      notify('Failed to create dashboard', 'error');
     }
   };
 
@@ -88,23 +82,23 @@ const ApplicationDashboard = () => {
         name: editingDashboardName,
       });
       setEditingDashboardId(null);
-      setEditingDashboardName("");
-      notify("Dashboard updated!", "success");
+      setEditingDashboardName('');
+      notify('Dashboard updated!', 'success');
       fetchDashboards();
     } catch {
-      notify("Failed to update dashboard", "error");
+      notify('Failed to update dashboard', 'error');
     }
   };
 
   const handleDeleteDashboard = async (dashboardId: string) => {
-    if (!window.confirm("Delete this dashboard?")) return;
+    if (!window.confirm('Delete this dashboard?')) return;
     try {
       await api.delete(`/dashboards/${dashboardId}`);
-      notify("Dashboard deleted", "info");
+      notify('Dashboard deleted', 'info');
       setSelectedDashboard(null);
       fetchDashboards();
     } catch {
-      notify("Failed to delete dashboard", "error");
+      notify('Failed to delete dashboard', 'error');
     }
   };
 
@@ -114,31 +108,28 @@ const ApplicationDashboard = () => {
       await api.post(`/dashboards/${dashboardId}/applications`, {
         appId: addingAppId,
       });
-      notify("Application added!", "success");
-      setAddingAppId("");
+      notify('Application added!', 'success');
+      setAddingAppId('');
       fetchDashboards();
     } catch {
-      notify("Failed to add application", "error");
+      notify('Failed to add application', 'error');
     }
   };
 
-  const handleRemoveAppFromDashboard = async (
-    dashboardId: string,
-    appId: string
-  ) => {
+  const handleRemoveAppFromDashboard = async (dashboardId: string, appId: string) => {
     try {
       await api.delete(`/dashboards/${dashboardId}/applications/${appId}`);
-      notify("Application removed", "info");
+      notify('Application removed', 'info');
       fetchDashboards();
     } catch {
-      notify("Failed to remove application", "error");
+      notify('Failed to remove application', 'error');
     }
   };
 
   const handleCopyDashboardUrl = (dashboardId: string) => {
     const url = `${window.location.origin}/dashboard/${dashboardId}`;
     navigator.clipboard.writeText(url);
-    notify("Dashboard URL copied!", "success");
+    notify('Dashboard URL copied!', 'success');
   };
 
   return (
@@ -154,7 +145,7 @@ const ApplicationDashboard = () => {
           type="text"
           placeholder="New dashboard name"
           value={newDashboardName}
-          onChange={(e) => setNewDashboardName(e.target.value)}
+          onChange={e => setNewDashboardName(e.target.value)}
           className="border border-gray-700 bg-gray-800 rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
         <button
@@ -168,7 +159,7 @@ const ApplicationDashboard = () => {
       <div className="mb-8 animate-fade-in">
         <h3 className="text-lg font-semibold mb-2">All Applications</h3>
         <ul className="space-y-2">
-          {applications.map((app) => (
+          {applications.map(app => (
             <li
               key={app._id}
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between border border-gray-700 rounded px-3 py-2 bg-gray-800 transition hover:scale-[1.01] hover:shadow-lg"
@@ -177,9 +168,7 @@ const ApplicationDashboard = () => {
                 {app.name} <span className="text-gray-400">({app.url})</span>
               </span>
               {selectedDashboard &&
-                !selectedDashboard.applications.some(
-                  (a) => a._id === app._id
-                ) && (
+                !selectedDashboard.applications.some(a => a._id === app._id) && (
                   <button
                     className="mt-2 sm:mt-0 ml-0 sm:ml-4 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
                     onClick={() => {
@@ -196,7 +185,7 @@ const ApplicationDashboard = () => {
       </div>
 
       <ul className="mb-8 space-y-2 animate-fade-in">
-        {dashboards.map((dashboard) => (
+        {dashboards.map(dashboard => (
           <li
             key={dashboard._id}
             className="flex flex-col sm:flex-row items-start sm:items-center gap-2 border border-gray-700 rounded px-3 py-2 bg-gray-800 transition hover:scale-[1.01] hover:shadow-lg"
@@ -206,7 +195,7 @@ const ApplicationDashboard = () => {
                 <input
                   type="text"
                   value={editingDashboardName}
-                  onChange={(e) => setEditingDashboardName(e.target.value)}
+                  onChange={e => setEditingDashboardName(e.target.value)}
                   placeholder="Edit dashboard name"
                   className="border border-gray-700 bg-gray-900 rounded px-2 py-1 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
@@ -221,7 +210,7 @@ const ApplicationDashboard = () => {
                     className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 transition"
                     onClick={() => {
                       setEditingDashboardId(null);
-                      setEditingDashboardName("");
+                      setEditingDashboardName('');
                     }}
                   >
                     Cancel
@@ -284,7 +273,7 @@ const ApplicationDashboard = () => {
           </h3>
           <h4 className="font-semibold mb-2">Applications</h4>
           <ul className="space-y-2 mb-4">
-            {selectedDashboard.applications.map((app) => (
+            {selectedDashboard.applications.map(app => (
               <li
                 key={app._id}
                 className="flex items-center justify-between border border-gray-700 rounded px-3 py-2 bg-gray-900 transition hover:scale-[1.01]"
@@ -294,9 +283,7 @@ const ApplicationDashboard = () => {
                 </span>
                 <button
                   className="ml-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                  onClick={() =>
-                    handleRemoveAppFromDashboard(selectedDashboard._id, app._id)
-                  }
+                  onClick={() => handleRemoveAppFromDashboard(selectedDashboard._id, app._id)}
                 >
                   Remove
                 </button>
@@ -307,18 +294,13 @@ const ApplicationDashboard = () => {
             <select
               aria-label="Select application to add"
               value={addingAppId}
-              onChange={(e) => setAddingAppId(e.target.value)}
+              onChange={e => setAddingAppId(e.target.value)}
               className="border border-gray-700 bg-gray-900 rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             >
               <option value="">Add application...</option>
               {applications
-                .filter(
-                  (app) =>
-                    !selectedDashboard.applications.some(
-                      (a) => a._id === app._id
-                    )
-                )
-                .map((app) => (
+                .filter(app => !selectedDashboard.applications.some(a => a._id === app._id))
+                .map(app => (
                   <option key={app._id} value={app._id}>
                     {app.name}
                   </option>

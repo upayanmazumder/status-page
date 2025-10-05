@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, FormEvent } from "react";
-import { useAuth } from "../AuthProvider/AuthProvider";
-import axios, { baseURL } from "../../../utils/api";
-import type { AxiosError } from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
-import md5 from "md5";
-import { useNotification } from "../../Notification/Notification";
+import { useState, FormEvent } from 'react';
+import { useAuth } from '../AuthProvider/AuthProvider';
+import axios, { baseURL } from '../../../utils/api';
+import type { AxiosError } from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaUser, FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
+import md5 from 'md5';
+import { useNotification } from '../../Notification/Notification';
 
 export default function AuthenticatePage() {
   const { login } = useAuth();
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
-    name: "",
-    email: "",
-    username: "",
-    password: "",
+    name: '',
+    email: '',
+    username: '',
+    password: '',
   });
   const { notify } = useNotification();
   const [error, setError] = useState<string | null>(null);
@@ -35,14 +35,13 @@ export default function AuthenticatePage() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await axios.post("/auth/login", loginData);
+      const res = await axios.post('/auth/login', loginData);
       login(res.data.token);
     } catch (err: unknown) {
       const error = err as AxiosError<{ message: string }>;
       notify(
-        error?.response?.data?.message ||
-          "Login failed. Please check your credentials.",
-        "error"
+        error?.response?.data?.message || 'Login failed. Please check your credentials.',
+        'error'
       );
     }
   };
@@ -52,16 +51,16 @@ export default function AuthenticatePage() {
     setError(null);
     try {
       const profilePicture = getGravatarUrl(registerData.email);
-      await axios.post("/auth/register", {
+      await axios.post('/auth/register', {
         ...registerData,
         profilePicture,
         name: registerData.name,
       });
-      notify("Registration successful! You can now login.", "success");
-      setActiveTab("login");
+      notify('Registration successful! You can now login.', 'success');
+      setActiveTab('login');
     } catch (err: unknown) {
       const error = err as AxiosError<{ message: string }>;
-      notify(error?.response?.data?.message || "Registration failed.", "error");
+      notify(error?.response?.data?.message || 'Registration failed.', 'error');
     }
   };
 
@@ -72,7 +71,7 @@ export default function AuthenticatePage() {
   };
 
   const inputStyle =
-    "w-full pl-10 pr-4 py-3 rounded-xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+    'w-full pl-10 pr-4 py-3 rounded-xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
   return (
     <motion.div
@@ -92,17 +91,17 @@ export default function AuthenticatePage() {
       )}
 
       <div className="flex justify-center gap-6 mb-6 border-b border-gray-700 pb-2">
-        {["login", "register"].map((tab) => (
+        {['login', 'register'].map(tab => (
           <button
             key={tab}
             onClick={() => {
-              setActiveTab(tab as "login" | "register");
+              setActiveTab(tab as 'login' | 'register');
               setError(null);
             }}
             className={`text-lg font-semibold pb-1 transition-all duration-300 ${
               activeTab === tab
-                ? "text-indigo-400 border-b-2 border-indigo-400"
-                : "text-gray-400 hover:text-indigo-300"
+                ? 'text-indigo-400 border-b-2 border-indigo-400'
+                : 'text-gray-400 hover:text-indigo-300'
             }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -119,7 +118,7 @@ export default function AuthenticatePage() {
       </button>
 
       <AnimatePresence mode="wait">
-        {activeTab === "login" ? (
+        {activeTab === 'login' ? (
           <motion.form
             key="login"
             onSubmit={handleLoginSubmit}
@@ -135,9 +134,7 @@ export default function AuthenticatePage() {
                 type="email"
                 placeholder="Email"
                 value={loginData.email}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, email: e.target.value })
-                }
+                onChange={e => setLoginData({ ...loginData, email: e.target.value })}
                 className={inputStyle}
                 required
               />
@@ -148,9 +145,7 @@ export default function AuthenticatePage() {
                 type="password"
                 placeholder="Password"
                 value={loginData.password}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, password: e.target.value })
-                }
+                onChange={e => setLoginData({ ...loginData, password: e.target.value })}
                 className={inputStyle}
                 required
               />
@@ -176,9 +171,7 @@ export default function AuthenticatePage() {
               <FaUser className="absolute left-3 top-4 text-gray-400" />
               <input
                 value={registerData.name}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, name: e.target.value })
-                }
+                onChange={e => setRegisterData({ ...registerData, name: e.target.value })}
                 placeholder="Name"
                 className={inputStyle}
                 required
@@ -189,9 +182,7 @@ export default function AuthenticatePage() {
               <input
                 type="email"
                 value={registerData.email}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, email: e.target.value })
-                }
+                onChange={e => setRegisterData({ ...registerData, email: e.target.value })}
                 placeholder="Email"
                 className={inputStyle}
                 required
@@ -201,7 +192,7 @@ export default function AuthenticatePage() {
               <FaUser className="absolute left-3 top-4 text-gray-400" />
               <input
                 value={registerData.username}
-                onChange={(e) =>
+                onChange={e =>
                   setRegisterData({
                     ...registerData,
                     username: e.target.value,
@@ -217,7 +208,7 @@ export default function AuthenticatePage() {
               <input
                 type="password"
                 value={registerData.password}
-                onChange={(e) =>
+                onChange={e =>
                   setRegisterData({
                     ...registerData,
                     password: e.target.value,

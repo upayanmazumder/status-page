@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 const Button: React.FC = () => {
   const [stars, setStars] = useState<number | null>(null);
@@ -8,13 +8,11 @@ const Button: React.FC = () => {
   useEffect(() => {
     const fetchStars = async () => {
       try {
-        const res = await fetch(
-          "https://api.github.com/repos/upayanmazumder/status-page"
-        );
+        const res = await fetch('https://api.github.com/repos/upayanmazumder/status-page');
         const data = await res.json();
         setStars(data.stargazers_count);
       } catch (err) {
-        console.error("Failed to fetch star count:", err);
+        console.error('Failed to fetch star count:', err);
       }
     };
 
@@ -22,7 +20,7 @@ const Button: React.FC = () => {
   }, []);
 
   const handleClick = () => {
-    window.open("https://github.com/upayanmazumder/status-page", "_blank");
+    window.open('https://github.com/upayanmazumder/status-page', '_blank');
   };
 
   return (
@@ -55,7 +53,7 @@ const Button: React.FC = () => {
           />
         </svg>
         <span className="inline-block tabular-nums tracking-wider font-display font-medium text-black dark:text-white">
-          {stars !== null ? stars : "..."}
+          {stars !== null ? stars : '...'}
         </span>
       </div>
     </button>

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import api from "../../../utils/api";
-import { useAuth } from "../../Auth/AuthProvider/AuthProvider";
-import { useNotification } from "../../Notification/Notification";
+import { useState } from 'react';
+import api from '../../../utils/api';
+import { useAuth } from '../../Auth/AuthProvider/AuthProvider';
+import { useNotification } from '../../Notification/Notification';
 
 interface AddApplicationProps {
   onAdded?: () => void;
@@ -11,8 +11,8 @@ interface AddApplicationProps {
 
 export default function AddApplication({ onAdded }: AddApplicationProps) {
   const [formData, setFormData] = useState({
-    name: "",
-    url: "",
+    name: '',
+    url: '',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -23,23 +23,23 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Application name is required";
+      newErrors.name = 'Application name is required';
     } else if (formData.name.length < 2) {
-      newErrors.name = "Application name must be at least 2 characters";
+      newErrors.name = 'Application name must be at least 2 characters';
     } else if (formData.name.length > 50) {
-      newErrors.name = "Application name must be less than 50 characters";
+      newErrors.name = 'Application name must be less than 50 characters';
     }
 
     if (!formData.url.trim()) {
-      newErrors.url = "URL is required";
+      newErrors.url = 'URL is required';
     } else {
       try {
         const url = new URL(formData.url);
-        if (!["http:", "https:"].includes(url.protocol)) {
-          newErrors.url = "URL must use HTTP or HTTPS protocol";
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          newErrors.url = 'URL must use HTTP or HTTPS protocol';
         }
       } catch {
-        newErrors.url = "Please enter a valid URL";
+        newErrors.url = 'Please enter a valid URL';
       }
     }
 
@@ -48,10 +48,10 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -64,13 +64,13 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
 
     setLoading(true);
     try {
-      await api.post("/applications", formData);
+      await api.post('/applications', formData);
 
       // Reset form
-      setFormData({ name: "", url: "" });
+      setFormData({ name: '', url: '' });
       setErrors({});
 
-      notify("Application added successfully!", "success");
+      notify('Application added successfully!', 'success');
       onAdded?.();
     } catch (err: unknown) {
       const error = err as {
@@ -83,9 +83,8 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
         setErrors(error.response.data.errors);
       } else {
         notify(
-          error?.response?.data?.message ||
-            "Failed to add application. Please try again.",
-          "error"
+          error?.response?.data?.message || 'Failed to add application. Please try again.',
+          'error'
         );
       }
     } finally {
@@ -98,64 +97,52 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white mb-2">
-          Application Details
-        </h3>
+        <h3 className="text-lg font-semibold text-white mb-2">Application Details</h3>
         <p className="text-gray-400 text-sm">
-          Provide the basic information about your application. The URL will be
-          monitored for status updates.
+          Provide the basic information about your application. The URL will be monitored for status
+          updates.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label
-            htmlFor="app-name"
-            className="block text-sm font-medium text-gray-300 mb-2"
-          >
+          <label htmlFor="app-name" className="block text-sm font-medium text-gray-300 mb-2">
             Application Name *
           </label>
           <input
             id="app-name"
             type="text"
             value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
+            onChange={e => handleInputChange('name', e.target.value)}
             className={`w-full px-4 py-3 rounded-lg bg-gray-900 text-white border transition-colors duration-200 focus:outline-none focus:ring-2 ${
               errors.name
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-600 focus:border-blue-500 focus:ring-blue-500"
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-600 focus:border-blue-500 focus:ring-blue-500'
             }`}
             placeholder="e.g. My Website, API Service, etc."
             disabled={loading}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-          )}
+          {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="app-url"
-            className="block text-sm font-medium text-gray-300 mb-2"
-          >
+          <label htmlFor="app-url" className="block text-sm font-medium text-gray-300 mb-2">
             Application URL *
           </label>
           <input
             id="app-url"
             type="url"
             value={formData.url}
-            onChange={(e) => handleInputChange("url", e.target.value)}
+            onChange={e => handleInputChange('url', e.target.value)}
             className={`w-full px-4 py-3 rounded-lg bg-gray-900 text-white border transition-colors duration-200 focus:outline-none focus:ring-2 ${
               errors.url
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-600 focus:border-blue-500 focus:ring-blue-500"
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-600 focus:border-blue-500 focus:ring-blue-500'
             }`}
             placeholder="https://example.com"
             disabled={loading}
           />
-          {errors.url && (
-            <p className="mt-1 text-sm text-red-400">{errors.url}</p>
-          )}
+          {errors.url && <p className="mt-1 text-sm text-red-400">{errors.url}</p>}
           <p className="mt-1 text-xs text-gray-500">
             This URL will be monitored for uptime and status checks
           </p>
@@ -188,7 +175,7 @@ export default function AddApplication({ onAdded }: AddApplicationProps) {
                 <span>Adding...</span>
               </span>
             ) : (
-              "Add Application"
+              'Add Application'
             )}
           </button>
         </div>

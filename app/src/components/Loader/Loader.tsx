@@ -1,5 +1,5 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 const Loader = () => {
   return (
@@ -38,7 +38,7 @@ const Loader = () => {
             y={50}
             x={13}
             maskUnits="userSpaceOnUse"
-            style={{ maskType: "luminance" }}
+            style={{ maskType: 'luminance' }}
             id="mask0_204_217"
           >
             <path
@@ -57,7 +57,7 @@ const Loader = () => {
               y={56}
               x={23}
               maskUnits="userSpaceOnUse"
-              style={{ maskType: "luminance" }}
+              style={{ maskType: 'luminance' }}
               id="mask1_204_217"
             >
               <path

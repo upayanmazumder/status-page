@@ -1,10 +1,10 @@
-import path from "path";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
+import path from 'path';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,12 +18,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "lh3.googleusercontent.com",
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       },
       {
-        protocol: "https",
-        hostname: "www.gravatar.com",
+        protocol: 'https',
+        hostname: 'www.gravatar.com',
       },
     ],
   },

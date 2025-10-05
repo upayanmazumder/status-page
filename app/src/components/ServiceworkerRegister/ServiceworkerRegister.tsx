@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export default function ServiceWorkerRegister() {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register("/service-worker.js")
-        .then((reg) => console.log("[SW] Registered:", reg))
-        .catch((err) => console.error("[SW] Registration failed:", err));
+        .register('/service-worker.js')
+        .then(reg => console.log('[SW] Registered:', reg))
+        .catch(err => console.error('[SW] Registration failed:', err));
     }
   }, []);
 

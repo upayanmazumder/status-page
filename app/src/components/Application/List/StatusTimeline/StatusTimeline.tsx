@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import api from "../../../../utils/api";
+import { useEffect, useState } from 'react';
+import api from '../../../../utils/api';
 
 const STATUS_PRIORITY = {
   offline: 2,
@@ -10,37 +10,37 @@ const STATUS_PRIORITY = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  online: "bg-green-500 hover:bg-green-400",
-  offline: "bg-red-500 hover:bg-red-400",
-  unknown: "bg-gray-400 hover:bg-gray-300",
+  online: 'bg-green-500 hover:bg-green-400',
+  offline: 'bg-red-500 hover:bg-red-400',
+  unknown: 'bg-gray-400 hover:bg-gray-300',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  online: "Online",
-  offline: "Offline",
-  unknown: "Unknown",
+  online: 'Online',
+  offline: 'Offline',
+  unknown: 'Unknown',
 };
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: d.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+    month: 'short',
+    day: 'numeric',
+    year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
   });
 }
 
 function formatTime(iso: string) {
   const d = new Date(iso);
   return d.toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 interface StatusBlock {
   from: string;
-  status: "online" | "offline" | "unknown";
+  status: 'online' | 'offline' | 'unknown';
   statusCode: number;
 }
 
@@ -49,10 +49,7 @@ interface StatusTimelineProps {
   days?: number;
 }
 
-export default function StatusTimeline({
-  appId,
-  days = 30,
-}: StatusTimelineProps) {
+export default function StatusTimeline({ appId, days = 30 }: StatusTimelineProps) {
   const [statusBlocks, setStatusBlocks] = useState<StatusBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +62,7 @@ export default function StatusTimeline({
         const res = await api.get(`/applications/${appId}/status-history`);
         setStatusBlocks(res.data.statusBlocks || []);
       } catch {
-        setError("Failed to load status history");
+        setError('Failed to load status history');
         setStatusBlocks([]);
       } finally {
         setLoading(false);
@@ -137,7 +134,7 @@ export default function StatusTimeline({
   // Group status blocks by date
   const groupedByDate: Record<string, StatusBlock[]> = {};
   for (const block of statusBlocks) {
-    const date = new Date(block.from).toISOString().split("T")[0];
+    const date = new Date(block.from).toISOString().split('T')[0];
     groupedByDate[date] = groupedByDate[date] || [];
     groupedByDate[date].push(block);
   }
@@ -146,9 +143,7 @@ export default function StatusTimeline({
   const dailyStatus = Object.entries(groupedByDate)
     .map(([date, blocks]) => {
       const worst = blocks.reduce((worst, curr) =>
-        STATUS_PRIORITY[curr.status] > STATUS_PRIORITY[worst.status]
-          ? curr
-          : worst
+        STATUS_PRIORITY[curr.status] > STATUS_PRIORITY[worst.status] ? curr : worst
       );
       return {
         date,
@@ -163,9 +158,7 @@ export default function StatusTimeline({
   if (!dailyStatus.length) {
     return (
       <div className="text-center py-6 sm:py-8">
-        <p className="text-sm sm:text-base text-gray-400">
-          No status data for the selected period
-        </p>
+        <p className="text-sm sm:text-base text-gray-400">No status data for the selected period</p>
       </div>
     );
   }
@@ -174,13 +167,9 @@ export default function StatusTimeline({
   const lastDate = dailyStatus[dailyStatus.length - 1]?.date;
 
   // Calculate uptime percentage
-  const onlineDays = dailyStatus.filter(
-    (day) => day.status === "online"
-  ).length;
+  const onlineDays = dailyStatus.filter(day => day.status === 'online').length;
   const uptimePercentage =
-    dailyStatus.length > 0
-      ? ((onlineDays / dailyStatus.length) * 100).toFixed(1)
-      : "0.0";
+    dailyStatus.length > 0 ? ((onlineDays / dailyStatus.length) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="space-y-4">
@@ -192,8 +181,7 @@ export default function StatusTimeline({
             <span className="text-gray-300 font-medium">{uptimePercentage}% uptime</span>
           </div>
           <div className="text-gray-500 text-xs sm:text-sm">
-            {dailyStatus.length} day{dailyStatus.length !== 1 ? "s" : ""}{" "}
-            monitored
+            {dailyStatus.length} day{dailyStatus.length !== 1 ? 's' : ''} monitored
           </div>
         </div>
 
@@ -222,8 +210,8 @@ export default function StatusTimeline({
               key={date}
               className={`flex-shrink-0 w-3 sm:w-4 lg:w-5 h-6 sm:h-8 lg:h-10 rounded-sm cursor-pointer transition-all duration-200 ${STATUS_COLORS[status]} hover:scale-110`}
               title={`${formatDate(date)} - ${STATUS_LABELS[status]}${
-                statusCode ? ` (${statusCode})` : ""
-              }${blockCount > 1 ? ` - ${blockCount} checks` : ""}`}
+                statusCode ? ` (${statusCode})` : ''
+              }${blockCount > 1 ? ` - ${blockCount} checks` : ''}`}
             />
           ))}
         </div>
@@ -232,7 +220,7 @@ export default function StatusTimeline({
         <div className="flex justify-between text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
           <span>{formatDate(firstDate)}</span>
           <span className="text-center">
-            {days} day{days !== 1 ? "s" : ""} ago
+            {days} day{days !== 1 ? 's' : ''} ago
           </span>
           <span>{formatDate(lastDate)}</span>
         </div>
@@ -243,9 +231,13 @@ export default function StatusTimeline({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
           <span className="flex items-center gap-1">
             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                clipRule="evenodd"
+              />
             </svg>
-            Current streak:{" "}
+            Current streak:{' '}
             {(() => {
               let streak = 0;
               const currentStatus = dailyStatus[dailyStatus.length - 1]?.status;
@@ -256,13 +248,17 @@ export default function StatusTimeline({
                   break;
                 }
               }
-              return `${streak} day${streak !== 1 ? "s" : ""} ${currentStatus}`;
+              return `${streak} day${streak !== 1 ? 's' : ''} ${currentStatus}`;
             })()}
           </span>
           {statusBlocks.length > 0 && (
             <span className="flex items-center gap-1">
               <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span className="hidden sm:inline">Last check: </span>
               <span className="sm:hidden">Last: </span>

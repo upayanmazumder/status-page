@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import SetUsername from "../../../components/Auth/SetUsername/SetUsername";
+import SetUsername from '../../../components/Auth/SetUsername/SetUsername';
 
 export default function Onboarding() {
   return (

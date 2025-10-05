@@ -1,9 +1,5 @@
-import {
-  Application,
-  IApplication,
-  IStatusPeriod,
-} from "../models/Application";
-import axios from "axios";
+import { Application, IApplication, IStatusPeriod } from '../models/Application';
+import axios from 'axios';
 
 /**
  * Checks the status of all applications and updates their statusHistory.
@@ -14,19 +10,19 @@ export async function checkAllApplicationsStatus() {
   const now = new Date();
 
   for (const app of apps) {
-    let status: "online" | "offline" = "offline";
+    let status: 'online' | 'offline' = 'offline';
     let statusCode = 0;
 
     try {
       const res = await axios.get(app.url, { timeout: 10000 });
       statusCode = res.status;
-      status = "online";
+      status = 'online';
     } catch (err: any) {
       if (err?.response) {
-        status = "online";
+        status = 'online';
         statusCode = err.response.status;
       } else {
-        status = "offline";
+        status = 'offline';
         statusCode = 0;
       }
     }
