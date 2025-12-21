@@ -127,35 +127,82 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full overflow-x-hidden">
       {/* Search and Filters */}
-      <div className="bg-gray-800 rounded-lg p-6">
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-800/30 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search Input */}
           <div className="md:col-span-2">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="search"
+              className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2"
+            >
+              <svg
+                className="w-4 h-4 text-blue-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
               Search Applications
             </label>
-            <input
-              id="search"
-              type="text"
-              placeholder="Search by name, URL, or owner..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            />
+            <div className="relative">
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by name, URL, or owner..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-900/80 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 hover:border-gray-500 backdrop-blur-sm"
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
 
           {/* Sort Options */}
           <div>
-            <label htmlFor="sort" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="sort"
+              className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2"
+            >
+              <svg
+                className="w-4 h-4 text-purple-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                />
+              </svg>
               Sort By
             </label>
             <select
               id="sort"
               value={sortBy}
               onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/80 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 hover:border-gray-500 backdrop-blur-sm cursor-pointer"
             >
               <option value="name">Name (A-Z)</option>
               <option value="subscribers">Most Subscribers</option>
@@ -166,20 +213,22 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
 
         {/* Filter Options */}
         <div className="mt-4 flex items-center space-x-4">
-          <label className="flex items-center text-sm text-gray-300">
+          <label className="flex items-center text-sm text-gray-300 cursor-pointer group">
             <input
               type="checkbox"
               checked={filterOwned}
               onChange={e => setFilterOwned(e.target.checked)}
-              className="mr-2 rounded text-blue-600 focus:ring-blue-500 focus:ring-2"
+              className="mr-2 rounded text-blue-600 focus:ring-blue-500 focus:ring-2 cursor-pointer w-4 h-4"
             />
-            Show only my applications
+            <span className="group-hover:text-white transition-colors">
+              Show only my applications
+            </span>
           </label>
         </div>
       </div>
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-400">
+      <div className="flex items-center justify-between text-sm">
         <span>
           {filteredAndSortedApplications.length} application
           {filteredAndSortedApplications.length !== 1 ? 's' : ''} found
@@ -221,31 +270,54 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAndSortedApplications.map(app => {
+          {filteredAndSortedApplications.map((app, index) => {
             const { isSubscribed, isOwner, subscriberCount } = getApplicationStats(app);
             const isProcessing = subscribingIds.has(app._id);
 
             return (
               <div
                 key={app._id}
-                className="bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-200 border border-gray-700 hover:border-gray-600"
+                className="group bg-gradient-to-br from-gray-800/50 to-gray-800/30 border border-gray-700 rounded-xl p-6 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 animate-slide-up min-w-0"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-white truncate pr-2">{app.name}</h3>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-2">
+                      {app.name}
+                    </h3>
                     {isOwner && (
-                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
+                      <span className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs px-3 py-1 rounded-full flex-shrink-0 shadow-lg">
                         Owner
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-400 break-all mb-2">{app.url}</p>
-                  <div className="text-xs text-gray-500">
-                    <p>Owner: {app.owner.username ? `@${app.owner.username}` : app.owner.email}</p>
-                    <p className="mt-1">
-                      {subscriberCount} subscriber
-                      {subscriberCount !== 1 ? 's' : ''}
-                    </p>
+                  <a
+                    href={app.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-400 hover:text-blue-300 hover:underline break-words overflow-wrap-anywhere mb-3 block line-clamp-2"
+                  >
+                    {app.url}
+                  </a>
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{app.owner.username ? `@${app.owner.username}` : app.owner.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                      </svg>
+                      <span>
+                        {subscriberCount} subscriber{subscriberCount !== 1 ? 's' : ''}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -253,15 +325,15 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
                   <button
                     onClick={() => handleSubscriptionToggle(app._id, isSubscribed)}
                     disabled={isProcessing}
-                    className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed ${
+                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed shadow-lg hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2 ${
                       isSubscribed
-                        ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white'
-                        : 'bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white'
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-500 text-white hover:shadow-red-500/50'
+                        : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:ring-green-500 text-white hover:shadow-green-500/50'
                     } ${isProcessing ? 'opacity-75' : ''}`}
                   >
                     {isProcessing ? (
-                      <span className="flex items-center justify-center space-x-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                           <circle
                             className="opacity-25"
                             cx="12"
@@ -269,6 +341,7 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
                             r="10"
                             stroke="currentColor"
                             strokeWidth="4"
+                            fill="none"
                           />
                           <path
                             className="opacity-75"
@@ -277,11 +350,41 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
                           />
                         </svg>
                         <span>Processing...</span>
-                      </span>
+                      </>
                     ) : isSubscribed ? (
-                      'Unsubscribe'
+                      <>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        Unsubscribe
+                      </>
                     ) : (
-                      'Subscribe'
+                      <>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Subscribe
+                      </>
                     )}
                   </button>
                 )}
@@ -290,6 +393,23 @@ export default function ApplicationsSearch({ onSubscribedChange }: ApplicationsS
           })}
         </div>
       )}
+
+      {/* Animations */}
+      <style jsx global>{`
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+      `}</style>
     </div>
   );
 }
