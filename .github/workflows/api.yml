@@ -3,10 +3,10 @@ name: Build & Push API
 on:
   push:
     branches:
-      - main
+      - "**"
     paths:
-      - 'api/**'
-      - '.github/workflows/api.yml'
+      - "api/**"
+      - ".github/workflows/api.yml"
   workflow_dispatch:
 
 permissions:
