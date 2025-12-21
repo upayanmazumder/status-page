@@ -7,6 +7,7 @@ import { useNotification } from '../../Notification/Notification';
 import Loader from '../../Loader/Loader';
 import StatusTimeline from './StatusTimeline/StatusTimeline';
 import useWindowWidth from '../../../utils/useWindowWidth';
+import { Button, Card } from '../../ui';
 
 interface Application {
   _id: string;
@@ -98,7 +99,11 @@ export default function ApplicationsList() {
 
   if (error) {
     return (
-      <div className="bg-gradient-to-br from-red-900/20 via-red-900/10 to-gray-900/20 backdrop-blur-sm border border-red-800/50 rounded-2xl p-8 sm:p-12 text-center mx-4 sm:mx-0 animate-fade-in">
+      <Card
+        variant="bordered"
+        padding="lg"
+        className="text-center mx-4 sm:mx-0 bg-gradient-to-br from-red-900/20 via-red-900/10 to-gray-900/20 border-red-800/50"
+      >
         <div className="text-red-400 mb-6">
           <svg
             className="mx-auto h-16 w-16 sm:h-20 sm:w-20 animate-pulse"
@@ -118,13 +123,10 @@ export default function ApplicationsList() {
           Error Loading Applications
         </h3>
         <p className="text-red-300/90 mb-8 text-base sm:text-lg max-w-md mx-auto">{error}</p>
-        <button
-          onClick={fetchApplications}
-          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-500/50 text-base min-h-[44px]"
-        >
+        <Button onClick={fetchApplications} variant="danger">
           Try Again
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 

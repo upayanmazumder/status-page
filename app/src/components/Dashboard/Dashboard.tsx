@@ -5,6 +5,7 @@ import { useAuth } from '../Auth/AuthProvider/AuthProvider';
 import { useNotification } from '../Notification/Notification';
 import api from '../../utils/api';
 import { useRouter } from 'next/navigation';
+import { Button, Modal, Input, Spinner } from '../ui';
 
 interface Application {
   _id: string;
@@ -141,7 +142,7 @@ const ApplicationDashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/10 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <Spinner size="xl" />
           <p className="mt-4 text-gray-400">Loading dashboards...</p>
         </div>
       </div>
@@ -162,11 +163,9 @@ const ApplicationDashboard = () => {
                 Create, organize, and monitor your application dashboards
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setIsModalOpen(true)}
-              className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105"
-            >
-              <span className="flex items-center gap-2">
+              leftIcon={
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -175,9 +174,10 @@ const ApplicationDashboard = () => {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                New Dashboard
-              </span>
-            </button>
+              }
+            >
+              New Dashboard
+            </Button>
           </div>
         </div>
 
@@ -477,51 +477,43 @@ const ApplicationDashboard = () => {
         )}
 
         {/* Create Dashboard Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-scale-up">
-              <h2 className="text-2xl font-bold text-white mb-6">Create New Dashboard</h2>
-              <form onSubmit={handleCreateDashboard} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="dashboardName"
-                    className="block text-sm font-medium text-gray-300 mb-2"
-                  >
-                    Dashboard Name
-                  </label>
-                  <input
-                    id="dashboardName"
-                    type="text"
-                    placeholder="e.g., Production Services, Dev Environment"
-                    value={newDashboardName}
-                    onChange={e => setNewDashboardName(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    autoFocus
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
-                    disabled={!newDashboardName.trim()}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Create Dashboard
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setNewDashboardName('');
-                    }}
-                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setNewDashboardName('');
+          }}
+          title="Create New Dashboard"
+          size="md"
+        >
+          <form onSubmit={handleCreateDashboard} className="space-y-4">
+            <Input
+              id="dashboardName"
+              type="text"
+              placeholder="e.g., Production Services, Dev Environment"
+              value={newDashboardName}
+              onChange={e => setNewDashboardName(e.target.value)}
+              helperText="Choose a descriptive name for your dashboard"
+              autoFocus
+            />
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={!newDashboardName.trim()} fullWidth>
+                Create Dashboard
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setNewDashboardName('');
+                }}
+                variant="secondary"
+                fullWidth
+              >
+                Cancel
+              </Button>
             </div>
-          </div>
-        )}
+          </form>
+        </Modal>
 
         {/* Manage Dashboard Modal */}
         {selectedDashboard && (
