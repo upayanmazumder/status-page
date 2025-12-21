@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
 import md5 from 'md5';
 import { useNotification } from '../../Notification/Notification';
+import { Button, Input, Card } from '../../ui';
 
 export default function AuthenticatePage() {
   const { login } = useAuth();
@@ -70,16 +71,8 @@ export default function AuthenticatePage() {
     exit: { opacity: 0, y: -20 },
   };
 
-  const inputStyle =
-    'w-full pl-10 pr-4 py-3 rounded-xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
-
   return (
-    <motion.div
-      className="bg-gray-900 p-8 rounded-3xl  w-full max-w-lg mx-auto"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <Card variant="elevated" padding="lg" className="w-full max-w-lg mx-auto">
       {error && (
         <motion.div
           className="mb-4 p-4 bg-red-600 text-white rounded-lg text-center"
@@ -109,13 +102,15 @@ export default function AuthenticatePage() {
         ))}
       </div>
 
-      <button
+      <Button
         onClick={handleGoogleLogin}
-        className="w-full flex items-center justify-center gap-3 py-3 mb-6 bg-white text-gray-800 rounded-xl font-semibold shadow hover:bg-gray-100 transition"
+        variant="secondary"
+        fullWidth
+        leftIcon={<FaGoogle className="text-red-500" />}
+        className="mb-6 bg-white text-gray-800 hover:bg-gray-100"
       >
-        <FaGoogle className="text-red-500" />
         Sign in with Google
-      </button>
+      </Button>
 
       <AnimatePresence mode="wait">
         {activeTab === 'login' ? (
@@ -127,35 +122,27 @@ export default function AuthenticatePage() {
             exit="exit"
             variants={formVariants}
             transition={{ duration: 0.3 }}
+            className="space-y-4"
           >
-            <div className="relative mb-4">
-              <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
-              <input
-                type="email"
-                placeholder="Email"
-                value={loginData.email}
-                onChange={e => setLoginData({ ...loginData, email: e.target.value })}
-                className={inputStyle}
-                required
-              />
-            </div>
-            <div className="relative mb-6">
-              <FaLock className="absolute left-3 top-4 text-gray-400" />
-              <input
-                type="password"
-                placeholder="Password"
-                value={loginData.password}
-                onChange={e => setLoginData({ ...loginData, password: e.target.value })}
-                className={inputStyle}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 bg-indigo-600 rounded-xl text-white font-semibold hover:bg-indigo-700 transition"
-            >
+            <Input
+              type="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={e => setLoginData({ ...loginData, email: e.target.value })}
+              leftIcon={<FaEnvelope />}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={loginData.password}
+              onChange={e => setLoginData({ ...loginData, password: e.target.value })}
+              leftIcon={<FaLock />}
+              required
+            />
+            <Button type="submit" fullWidth className="mt-6">
               Login
-            </button>
+            </Button>
           </motion.form>
         ) : (
           <motion.form
@@ -166,68 +153,44 @@ export default function AuthenticatePage() {
             exit="exit"
             variants={formVariants}
             transition={{ duration: 0.3 }}
+            className="space-y-4"
           >
-            <div className="relative mb-4">
-              <FaUser className="absolute left-3 top-4 text-gray-400" />
-              <input
-                value={registerData.name}
-                onChange={e => setRegisterData({ ...registerData, name: e.target.value })}
-                placeholder="Name"
-                className={inputStyle}
-                required
-              />
-            </div>
-            <div className="relative mb-4">
-              <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
-              <input
-                type="email"
-                value={registerData.email}
-                onChange={e => setRegisterData({ ...registerData, email: e.target.value })}
-                placeholder="Email"
-                className={inputStyle}
-                required
-              />
-            </div>
-            <div className="relative mb-4">
-              <FaUser className="absolute left-3 top-4 text-gray-400" />
-              <input
-                value={registerData.username}
-                onChange={e =>
-                  setRegisterData({
-                    ...registerData,
-                    username: e.target.value,
-                  })
-                }
-                placeholder="Username"
-                className={inputStyle}
-                required
-              />
-            </div>
-            <div className="relative mb-6">
-              <FaLock className="absolute left-3 top-4 text-gray-400" />
-              <input
-                type="password"
-                value={registerData.password}
-                onChange={e =>
-                  setRegisterData({
-                    ...registerData,
-                    password: e.target.value,
-                  })
-                }
-                placeholder="Password"
-                className={inputStyle}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 bg-indigo-600 rounded-xl text-white font-semibold hover:bg-indigo-700 transition"
-            >
+            <Input
+              value={registerData.name}
+              onChange={e => setRegisterData({ ...registerData, name: e.target.value })}
+              placeholder="Name"
+              leftIcon={<FaUser />}
+              required
+            />
+            <Input
+              type="email"
+              value={registerData.email}
+              onChange={e => setRegisterData({ ...registerData, email: e.target.value })}
+              placeholder="Email"
+              leftIcon={<FaEnvelope />}
+              required
+            />
+            <Input
+              value={registerData.username}
+              onChange={e => setRegisterData({ ...registerData, username: e.target.value })}
+              placeholder="Username"
+              leftIcon={<FaUser />}
+              required
+            />
+            <Input
+              type="password"
+              value={registerData.password}
+              onChange={e => setRegisterData({ ...registerData, password: e.target.value })}
+              placeholder="Password"
+              leftIcon={<FaLock />}
+              required
+            />
+            <Button type="submit" fullWidth className="mt-6">
               Register
-            </button>
+            </Button>
           </motion.form>
         )}
       </AnimatePresence>
-    </motion.div>
+    </Card>
   );
 }
