@@ -3,7 +3,7 @@ import axios from 'axios';
 const baseURL =
   process.env.NEXT_PUBLIC_ENV === 'development'
     ? 'http://localhost:5000'
-    : 'https://api.status-page.upayan.dev';
+    : 'https://api-status-page.upayan.dev';
 
 const instance = axios.create({
   baseURL,
