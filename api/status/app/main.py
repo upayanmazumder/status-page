@@ -40,6 +40,14 @@ logger = get_logger("status_service")
 app = FastAPI(title="Status Service", version="1.0.0")
 setup_error_handlers(app)
 
+# Include RSS/Atom feeds
+from app.feeds import router as feeds_router
+app.include_router(feeds_router)
+
+# Include badge generation
+from app.badge import router as badge_router
+app.include_router(badge_router)
+
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
