@@ -1,132 +1,526 @@
 """Dashboard Service - Component & Incident Management"""
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+import uuid
+from datetime import datetime, timezone
 from typing import List, Optional
-from datetime import datetime
-from enum import Enum
-import structlog
 
-logger = structlog.get_logger()
+from fastapi import FastAPI, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from sqlalchemy import select, func, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared import (
+    configure_logging,
+    get_settings,
+    DatabaseManager,
+    get_async_session,
+    setup_error_handlers,
+    get_current_user,
+    require_org_access,
+    NotFoundError,
+    ValidationError,
+    HealthCheck,
+    PaginatedResponse,
+    PaginationParams,
+)
+from shared.models import (
+    Component,
+    ComponentGroup,
+    ComponentStatus,
+    Incident,
+    IncidentStatus,
+    IncidentImpact,
+    IncidentUpdate,
+    Maintenance,
+    MaintenanceStatus,
+)
+from shared.logging import get_logger
+
+configure_logging()
+logger = get_logger("dashboard_service")
 
 app = FastAPI(title="Dashboard Service", version="1.0.0")
+setup_error_handlers(app)
+
+settings = get_settings()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.get_cors_origins(),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-class ComponentStatus(str, Enum):
-    operational = "operational"
-    degraded_performance = "degraded_performance"
-    partial_outage = "partial_outage"
-    major_outage = "major_outage"
-    under_maintenance = "under_maintenance"
-
-
-class IncidentStatus(str, Enum):
-    investigating = "investigating"
-    identified = "identified"
-    monitoring = "monitoring"
-    resolved = "resolved"
-
-
-class Component(BaseModel):
-    id: Optional[str] = None
-    project_id: str
-    group_id: Optional[str] = None
-    name: str
+# Schemas
+class ComponentCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    status: ComponentStatus = ComponentStatus.operational
+    group_id: Optional[str] = None
     position: int = 0
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
 
 
-class Incident(BaseModel):
-    id: Optional[str] = None
+class ComponentUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    status: Optional[ComponentStatus] = None
+    group_id: Optional[str] = None
+    position: Optional[int] = None
+
+
+class ComponentResponse(BaseModel):
+    id: str
+    project_id: str
+    group_id: Optional[str]
+    name: str
+    description: Optional[str]
+    status: str
+    position: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class IncidentCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=500)
+    status: IncidentStatus = IncidentStatus.investigating
+    impact: IncidentImpact = IncidentImpact.none
+    component_ids: List[str] = []
+
+
+class IncidentUpdateCreate(BaseModel):
+    message: str = Field(..., min_length=1)
+    status: IncidentStatus
+
+
+class IncidentResponse(BaseModel):
+    id: str
     project_id: str
     title: str
-    status: IncidentStatus = IncidentStatus.investigating
-    impact: str = "none"
-    resolved_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    status: str
+    impact: str
+    resolved_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    component_ids: List[str] = []
+
+    class Config:
+        from_attributes = True
 
 
-class IncidentUpdate(BaseModel):
-    id: Optional[str] = None
-    incident_id: str
-    message: str
-    status: IncidentStatus
-    created_at: Optional[datetime] = None
+class MaintenanceCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=500)
+    description: Optional[str] = None
+    scheduled_start: datetime
+    scheduled_end: datetime
+    component_ids: List[str] = []
 
 
-@app.get("/health")
+class MaintenanceResponse(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    status: str
+    scheduled_start: datetime
+    scheduled_end: datetime
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Health check
+@app.get("/health", response_model=HealthCheck)
 async def health_check():
-    return {"status": "ok", "service": "dashboard"}
+    return HealthCheck(status="ok", service="dashboard")
 
 
 # Components
-@app.post("/components")
-async def create_component(component: Component):
-    logger.info("component_created", project_id=component.project_id, name=component.name)
-    # TODO: Implement component creation
-    return {"message": "Component created", "component_id": "comp_123"}
+@app.post("/components", response_model=ComponentResponse)
+async def create_component(
+    project_id: str,
+    data: ComponentCreate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("component_create", project_id=project_id, name=data.name)
+
+    component = Component(
+        id=uuid.uuid4(),
+        project_id=uuid.UUID(project_id),
+        group_id=uuid.UUID(data.group_id) if data.group_id else None,
+        name=data.name,
+        description=data.description,
+        position=data.position,
+    )
+    db.add(component)
+    await db.commit()
+    await db.refresh(component)
+
+    return ComponentResponse(
+        id=str(component.id),
+        project_id=str(component.project_id),
+        group_id=str(component.group_id) if component.group_id else None,
+        name=component.name,
+        description=component.description,
+        status=component.status.value,
+        position=component.position,
+        created_at=component.created_at,
+        updated_at=component.updated_at,
+    )
 
 
-@app.get("/components/{project_id}")
-async def get_components(project_id: str):
-    # TODO: Implement component retrieval
-    return []
+@app.get("/components")
+async def get_components(
+    project_id: str,
+    pagination: PaginationParams = Depends(),
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Get total count
+    total_result = await db.execute(
+        select(func.count())
+        .select_from(Component)
+        .where(
+            Component.project_id == uuid.UUID(project_id),
+            Component.deleted_at.is_(None),
+        )
+    )
+    total = total_result.scalar()
+
+    # Get paginated results
+    result = await db.execute(
+        select(Component)
+        .where(
+            Component.project_id == uuid.UUID(project_id),
+            Component.deleted_at.is_(None),
+        )
+        .order_by(Component.position)
+        .offset(pagination.offset)
+        .limit(pagination.limit)
+    )
+    components = result.scalars().all()
+
+    items = [
+        ComponentResponse(
+            id=str(c.id),
+            project_id=str(c.project_id),
+            group_id=str(c.group_id) if c.group_id else None,
+            name=c.name,
+            description=c.description,
+            status=c.status.value,
+            position=c.position,
+            created_at=c.created_at,
+            updated_at=c.updated_at,
+        )
+        for c in components
+    ]
+
+    return PaginatedResponse.create(
+        items=items, total=total, page=pagination.page, limit=pagination.limit
+    )
 
 
-@app.patch("/components/{component_id}")
-async def update_component(component_id: str, component: Component):
-    logger.info("component_updated", component_id=component_id)
-    # TODO: Implement component update
-    return {"message": "Component updated"}
+@app.patch("/components/{component_id}", response_model=ComponentResponse)
+async def update_component(
+    component_id: str,
+    data: ComponentUpdate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("component_update", component_id=component_id)
+
+    result = await db.execute(
+        select(Component).where(
+            Component.id == uuid.UUID(component_id),
+            Component.deleted_at.is_(None),
+        )
+    )
+    component = result.scalar_one_or_none()
+
+    if not component:
+        raise NotFoundError("Component not found")
+
+    # Update fields
+    if data.name is not None:
+        component.name = data.name
+    if data.description is not None:
+        component.description = data.description
+    if data.status is not None:
+        component.status = data.status
+    if data.group_id is not None:
+        component.group_id = uuid.UUID(data.group_id) if data.group_id else None
+    if data.position is not None:
+        component.position = data.position
+
+    await db.commit()
+    await db.refresh(component)
+
+    return ComponentResponse(
+        id=str(component.id),
+        project_id=str(component.project_id),
+        group_id=str(component.group_id) if component.group_id else None,
+        name=component.name,
+        description=component.description,
+        status=component.status.value,
+        position=component.position,
+        created_at=component.created_at,
+        updated_at=component.updated_at,
+    )
 
 
 @app.delete("/components/{component_id}")
-async def delete_component(component_id: str):
-    logger.info("component_deleted", component_id=component_id)
-    # TODO: Implement soft delete
+async def delete_component(
+    component_id: str,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("component_delete", component_id=component_id)
+
+    result = await db.execute(
+        select(Component).where(
+            Component.id == uuid.UUID(component_id),
+            Component.deleted_at.is_(None),
+        )
+    )
+    component = result.scalar_one_or_none()
+
+    if not component:
+        raise NotFoundError("Component not found")
+
+    # Soft delete
+    component.deleted_at = datetime.now(timezone.utc)
+    await db.commit()
+
     return {"message": "Component deleted"}
 
 
 # Incidents
-@app.post("/incidents")
-async def create_incident(incident: Incident):
-    logger.info("incident_created", project_id=incident.project_id, title=incident.title)
-    # TODO: Implement incident creation
-    return {"message": "Incident created", "incident_id": "inc_123"}
+@app.post("/incidents", response_model=IncidentResponse)
+async def create_incident(
+    project_id: str,
+    data: IncidentCreate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("incident_create", project_id=project_id, title=data.title)
+
+    org_id = user.get("org_id")
+
+    incident = Incident(
+        id=uuid.uuid4(),
+        project_id=uuid.UUID(project_id),
+        org_id=uuid.UUID(org_id),
+        title=data.title,
+        status=data.status,
+        impact=data.impact,
+    )
+    db.add(incident)
+
+    # Add affected components
+    if data.component_ids:
+        result = await db.execute(
+            select(Component).where(
+                Component.id.in_([uuid.UUID(cid) for cid in data.component_ids]),
+                Component.deleted_at.is_(None),
+            )
+        )
+        components = result.scalars().all()
+        incident.components = list(components)
+
+    await db.commit()
+    await db.refresh(incident)
+
+    return IncidentResponse(
+        id=str(incident.id),
+        project_id=str(incident.project_id),
+        title=incident.title,
+        status=incident.status.value,
+        impact=incident.impact.value,
+        resolved_at=incident.resolved_at,
+        created_at=incident.created_at,
+        updated_at=incident.updated_at,
+        component_ids=[str(c.id) for c in incident.components],
+    )
 
 
-@app.get("/incidents/{project_id}")
-async def get_incidents(project_id: str, status: Optional[str] = None):
-    # TODO: Implement incident retrieval with filtering
-    return []
+@app.get("/incidents")
+async def get_incidents(
+    project_id: str,
+    status_filter: Optional[str] = None,
+    pagination: PaginationParams = Depends(),
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    query = select(Incident).where(Incident.project_id == uuid.UUID(project_id))
+
+    if status_filter:
+        query = query.where(Incident.status == IncidentStatus(status_filter))
+
+    # Get total
+    total_result = await db.execute(select(func.count()).select_from(query.subquery()))
+    total = total_result.scalar()
+
+    # Get paginated
+    result = await db.execute(
+        query.order_by(Incident.created_at.desc())
+        .offset(pagination.offset)
+        .limit(pagination.limit)
+    )
+    incidents = result.scalars().all()
+
+    items = [
+        IncidentResponse(
+            id=str(i.id),
+            project_id=str(i.project_id),
+            title=i.title,
+            status=i.status.value,
+            impact=i.impact.value,
+            resolved_at=i.resolved_at,
+            created_at=i.created_at,
+            updated_at=i.updated_at,
+            component_ids=[str(c.id) for c in i.components],
+        )
+        for i in incidents
+    ]
+
+    return PaginatedResponse.create(
+        items=items, total=total, page=pagination.page, limit=pagination.limit
+    )
 
 
-@app.patch("/incidents/{incident_id}")
-async def update_incident(incident_id: str, incident: Incident):
-    logger.info("incident_updated", incident_id=incident_id)
-    # TODO: Implement incident update
-    return {"message": "Incident updated"}
+@app.patch("/incidents/{incident_id}", response_model=IncidentResponse)
+async def update_incident(
+    incident_id: str,
+    data: IncidentUpdateCreate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("incident_update", incident_id=incident_id)
 
+    result = await db.execute(
+        select(Incident).where(Incident.id == uuid.UUID(incident_id))
+    )
+    incident = result.scalar_one_or_none()
 
-@app.post("/incidents/{incident_id}/updates")
-async def add_incident_update(incident_id: str, update: IncidentUpdate):
-    logger.info("incident_update_added", incident_id=incident_id)
-    # TODO: Implement update addition
-    return {"message": "Update added", "update_id": "upd_123"}
+    if not incident:
+        raise NotFoundError("Incident not found")
+
+    # Update incident status
+    incident.status = data.status
+    if data.status == IncidentStatus.resolved:
+        incident.resolved_at = datetime.now(timezone.utc)
+
+    # Add update
+    update_entry = IncidentUpdate(
+        id=uuid.uuid4(),
+        incident_id=incident.id,
+        message=data.message,
+        status=data.status,
+    )
+    db.add(update_entry)
+
+    await db.commit()
+    await db.refresh(incident)
+
+    return IncidentResponse(
+        id=str(incident.id),
+        project_id=str(incident.project_id),
+        title=incident.title,
+        status=incident.status.value,
+        impact=incident.impact.value,
+        resolved_at=incident.resolved_at,
+        created_at=incident.created_at,
+        updated_at=incident.updated_at,
+        component_ids=[str(c.id) for c in incident.components],
+    )
 
 
 # Maintenance
-@app.post("/maintenances")
-async def create_maintenance(maintenance: dict):
-    logger.info("maintenance_created")
-    # TODO: Implement maintenance creation
-    return {"message": "Maintenance scheduled"}
+@app.post("/maintenances", response_model=MaintenanceResponse)
+async def create_maintenance(
+    project_id: str,
+    data: MaintenanceCreate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("maintenance_create", project_id=project_id, title=data.title)
+
+    org_id = user.get("org_id")
+
+    maintenance = Maintenance(
+        id=uuid.uuid4(),
+        project_id=uuid.UUID(project_id),
+        org_id=uuid.UUID(org_id),
+        title=data.title,
+        description=data.description,
+        scheduled_start=data.scheduled_start,
+        scheduled_end=data.scheduled_end,
+    )
+
+    # Add affected components
+    if data.component_ids:
+        result = await db.execute(
+            select(Component).where(
+                Component.id.in_([uuid.UUID(cid) for cid in data.component_ids]),
+                Component.deleted_at.is_(None),
+            )
+        )
+        components = result.scalars().all()
+        maintenance.components = list(components)
+
+    db.add(maintenance)
+    await db.commit()
+    await db.refresh(maintenance)
+
+    return MaintenanceResponse(
+        id=str(maintenance.id),
+        project_id=str(maintenance.project_id),
+        title=maintenance.title,
+        status=maintenance.status.value,
+        scheduled_start=maintenance.scheduled_start,
+        scheduled_end=maintenance.scheduled_end,
+        created_at=maintenance.created_at,
+    )
 
 
-@app.get("/maintenances/{project_id}")
-async def get_maintenances(project_id: str):
-    # TODO: Implement maintenance retrieval
-    return []
+@app.get("/maintenances")
+async def get_maintenances(
+    project_id: str,
+    pagination: PaginationParams = Depends(),
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    query = select(Maintenance).where(
+        Maintenance.project_id == uuid.UUID(project_id),
+        Maintenance.deleted_at.is_(None),
+    )
+
+    total_result = await db.execute(select(func.count()).select_from(query.subquery()))
+    total = total_result.scalar()
+
+    result = await db.execute(
+        query.order_by(Maintenance.scheduled_start.desc())
+        .offset(pagination.offset)
+        .limit(pagination.limit)
+    )
+    maintenances = result.scalars().all()
+
+    items = [
+        MaintenanceResponse(
+            id=str(m.id),
+            project_id=str(m.project_id),
+            title=m.title,
+            status=m.status.value,
+            scheduled_start=m.scheduled_start,
+            scheduled_end=m.scheduled_end,
+            created_at=m.created_at,
+        )
+        for m in maintenances
+    ]
+
+    return PaginatedResponse.create(
+        items=items, total=total, page=pagination.page, limit=pagination.limit
+    )
