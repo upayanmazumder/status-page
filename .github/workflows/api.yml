@@ -24,6 +24,7 @@ jobs:
       dashboard: ${{ steps.changes.outputs.dashboard }}
       status: ${{ steps.changes.outputs.status }}
       gateway: ${{ steps.changes.outputs.gateway }}
+      shared: ${{ steps.changes.outputs.shared }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -32,20 +33,28 @@ jobs:
           filters: |
             auth:
               - 'api/auth/**'
+              - 'api/shared/**'
             monitor:
               - 'api/monitor/**'
+              - 'api/shared/**'
             notify:
               - 'api/notify/**'
+              - 'api/shared/**'
             dashboard:
               - 'api/dashboard/**'
+              - 'api/shared/**'
             status:
               - 'api/status/**'
+              - 'api/shared/**'
             gateway:
               - 'api/gateway/**'
+              - 'api/shared/**'
+            shared:
+              - 'api/shared/**'
 
   build-auth:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.auth == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.auth == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +73,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/auth
+          context: .
           file: ./api/auth/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -74,7 +83,7 @@ jobs:
 
   build-monitor:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.monitor == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.monitor == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -93,7 +102,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/monitor
+          context: .
           file: ./api/monitor/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -103,7 +112,7 @@ jobs:
 
   build-notify:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.notify == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.notify == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -122,7 +131,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/notify
+          context: .
           file: ./api/notify/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -132,7 +141,7 @@ jobs:
 
   build-dashboard:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.dashboard == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.dashboard == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +160,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/dashboard
+          context: .
           file: ./api/dashboard/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -161,7 +170,7 @@ jobs:
 
   build-status:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.status == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.status == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -180,7 +189,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/status
+          context: .
           file: ./api/status/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -190,7 +199,7 @@ jobs:
 
   build-gateway:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.gateway == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.gateway == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -209,7 +218,7 @@ jobs:
             type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api/gateway
+          context: .
           file: ./api/gateway/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}

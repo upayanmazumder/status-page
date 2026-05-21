@@ -29,8 +29,8 @@ services:
 
   gateway:
     build:
-      context: ./api/gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/gateway/Dockerfile
     ports:
       - "4000:8000"
     environment:
@@ -48,8 +48,8 @@ services:
 
   auth:
     build:
-      context: ./api/auth
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/auth/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
       - REDIS_URL=redis://redis:6379/0
@@ -62,8 +62,8 @@ services:
 
   monitor:
     build:
-      context: ./api/monitor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/monitor/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
       - REDIS_URL=redis://redis:6379/0
@@ -75,8 +75,8 @@ services:
 
   notify:
     build:
-      context: ./api/notify
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/notify/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
       - REDIS_URL=redis://redis:6379/0
@@ -90,8 +90,8 @@ services:
 
   dashboard:
     build:
-      context: ./api/dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/dashboard/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
       - REDIS_URL=redis://redis:6379/0
@@ -103,8 +103,8 @@ services:
 
   status:
     build:
-      context: ./api/status
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./api/status/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
       - REDIS_URL=redis://redis:6379/0
