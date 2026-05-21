@@ -27,14 +27,19 @@ from shared import (
 from shared.events import EventPublisher
 import redis.asyncio as redis
 from shared.models import (
+    AuditLog,
     Component,
     ComponentGroup,
-    ComponentStatus,
     Incident,
-    IncidentStatus,
-    IncidentImpact,
     IncidentUpdate,
     Maintenance,
+    Organization,
+    Project,
+    Subscriber,
+    UptimeCheck,
+    ComponentStatus,
+    IncidentStatus,
+    IncidentImpact,
     MaintenanceStatus,
 )
 from shared.logging import get_logger
@@ -52,6 +57,10 @@ app.include_router(bulk_router)
 # Include search router
 from app.search import router as search_router
 app.include_router(search_router)
+
+# Include audit log router
+from app.main_audit import router as audit_router
+app.include_router(audit_router)
 
 settings = get_settings()
 app.add_middleware(
@@ -343,6 +352,19 @@ async def create_component(
     await db.commit()
     await db.refresh(component)
 
+    # Create audit log
+    audit = AuditLog(
+        org_id=project.org_id,
+        actor_id=user.get("id"),
+        action="component.created",
+        entity_type="component",
+        entity_id=component.id,
+        changes={"name": component.name, "status": component.status.value},
+        meta={"project_id": str(project_id)},
+    )
+    db.add(audit)
+    await db.commit()
+
     # Publish event and invalidate cache
     org_slug = user.get("org_id", "unknown")
     await EventPublisher.publish_component_change(
@@ -447,6 +469,19 @@ async def update_component(
     await db.commit()
     await db.refresh(component)
 
+    # Create audit log
+    audit = AuditLog(
+        org_id=component.project.org_id,
+        actor_id=user.get("id"),
+        action="component.updated",
+        entity_type="component",
+        entity_id=component.id,
+        changes={"name": component.name, "status": component.status.value},
+        meta={"project_id": str(component.project_id)},
+    )
+    db.add(audit)
+    await db.commit()
+
     # Publish event and invalidate cache
     org_slug = user.get("org_id", "unknown")
     project_id = str(component.project_id)
@@ -490,6 +525,18 @@ async def delete_component(
 
     # Soft delete
     component.deleted_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    # Create audit log
+    audit = AuditLog(
+        org_id=component.project.org_id,
+        actor_id=user.get("id"),
+        action="component.deleted",
+        entity_type="component",
+        entity_id=component.id,
+        meta={"project_id": str(component.project_id), "name": component.name},
+    )
+    db.add(audit)
     await db.commit()
 
     # Publish event and invalidate cache
@@ -538,6 +585,19 @@ async def create_incident(
 
     await db.commit()
     await db.refresh(incident)
+
+    # Create audit log
+    audit = AuditLog(
+        org_id=project.org_id,
+        actor_id=user.get("id"),
+        action="incident.created",
+        entity_type="incident",
+        entity_id=incident.id,
+        changes={"title": incident.title, "status": incident.status.value, "impact": incident.impact.value},
+        meta={"project_id": str(project_id)},
+    )
+    db.add(audit)
+    await db.commit()
 
     # Publish event and invalidate cache
     org_slug = user.get("org_id", "unknown")
@@ -681,6 +741,20 @@ async def update_incident(
 
     await db.commit()
     await db.refresh(incident)
+
+    # Create audit log
+    action = "incident.resolved" if data.status == IncidentStatus.resolved else "incident.updated"
+    audit = AuditLog(
+        org_id=incident.org_id,
+        actor_id=user.get("id"),
+        action=action,
+        entity_type="incident",
+        entity_id=incident.id,
+        changes={"title": incident.title, "status": incident.status.value, "message": data.message},
+        meta={"project_id": str(incident.project_id)},
+    )
+    db.add(audit)
+    await db.commit()
 
     # Publish event and invalidate cache
     org_slug = user.get("org_id", "unknown")

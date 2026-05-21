@@ -17,15 +17,37 @@ export default function ActivityFeed() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching activities
-    setTimeout(() => {
-      setActivities([
-        { id: "1", action: "created", entity_type: "incident", entity_name: "API Latency", user: "Admin", timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
-        { id: "2", action: "updated", entity_type: "component", entity_name: "Database", user: "Admin", timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString() },
-        { id: "3", action: "resolved", entity_type: "incident", entity_name: "CDN Issue", user: "Admin", timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-      ]);
-      setLoading(false);
-    }, 500);
+    const fetchActivities = async () => {
+      try {
+        const response = await apiClient.get("/dashboard/audit-logs?project_id=default&limit=10");
+        const items = response.data.items || [];
+        
+        const mapped = items.map((log: any) => {
+          const actionParts = log.action.split(".");
+          const action = actionParts.length > 1 ? actionParts[1] : log.action;
+          const entityName = log.changes?.name || log.changes?.title || log.meta?.name || "Unknown";
+          
+          return {
+            id: log.id,
+            action: action,
+            entity_type: log.entity_type,
+            entity_name: entityName,
+            user: "Admin", // TODO: fetch user name from actor_id
+            timestamp: log.created_at,
+          };
+        });
+        
+        setActivities(mapped);
+      } catch (error) {
+        console.error("Failed to fetch audit logs:", error);
+        // Fallback to empty state
+        setActivities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchActivities();
   }, []);
 
   const getActionColor = (action: string) => {
