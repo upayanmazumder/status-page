@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import apiClient from "@/lib/api";
+import ActivityFeed from "@/components/activity-feed";
 
 interface Component {
   id: string;
@@ -136,7 +137,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Active Incidents */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-lg shadow-sm border mb-8">
         <div className="px-6 py-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Active Incidents</h2>
           <Link
@@ -176,6 +177,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Activity Feed */}
+      <ActivityFeed />
     </div>
   );
 }

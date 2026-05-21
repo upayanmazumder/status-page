@@ -42,6 +42,10 @@ logger = get_logger("dashboard_service")
 app = FastAPI(title="Dashboard Service", version="1.0.0")
 setup_error_handlers(app)
 
+# Include bulk operations router
+from app.bulk import router as bulk_router
+app.include_router(bulk_router)
+
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
