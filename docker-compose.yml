@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: statuspage
+      POSTGRES_USER: statuspage
+      POSTGRES_PASSWORD: statuspage
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U statuspage -d statuspage"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build:
+      context: ./api/gateway
+      dockerfile: Dockerfile
+    ports:
+      - "4000:8000"
+    environment:
+      - AUTH_SERVICE_URL=http://auth:8000
+      - MONITOR_SERVICE_URL=http://monitor:8000
+      - NOTIFY_SERVICE_URL=http://notify:8000
+      - DASHBOARD_SERVICE_URL=http://dashboard:8000
+      - STATUS_SERVICE_URL=http://status:8000
+    depends_on:
+      - auth
+      - monitor
+      - notify
+      - dashboard
+      - status
+
+  auth:
+    build:
+      context: ./api/auth
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=dev-jwt-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  monitor:
+    build:
+      context: ./api/monitor
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  notify:
+    build:
+      context: ./api/notify
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
+      - REDIS_URL=redis://redis:6379/0
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: ./api/dashboard
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  status:
+    build:
+      context: ./api/status
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://statuspage:statuspage@postgres:5432/statuspage
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres_data:

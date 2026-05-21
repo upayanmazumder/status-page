@@ -1,0 +1,44 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: status-page-gateway
+  namespace: status-page
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`api.yourapp.com`)
+      kind: Rule
+      services:
+        - name: gateway
+          port: 80
+      middlewares:
+        - name: rate-limit
+        - name: secure-headers
+  tls:
+    certResolver: letsencrypt
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: rate-limit
+  namespace: status-page
+spec:
+  rateLimit:
+    average: 100
+    burst: 50
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: secure-headers
+  namespace: status-page
+spec:
+  headers:
+    frameDeny: true
+    sslRedirect: true
+    browserXssFilter: true
+    contentTypeNosniff: true
+    stsIncludeSubdomains: true
+    stsPreload: true
+    stsSeconds: 31536000

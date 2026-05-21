@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: status-page
+  labels:
+    app.kubernetes.io/name: status-page
+    app.kubernetes.io/part-of: status-page-platform

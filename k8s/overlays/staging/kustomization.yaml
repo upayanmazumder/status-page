@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: status-page-staging
+
+resources:
+  - ../base
+
+namePrefix: staging-
+
+patches:
+  - target:
+      kind: Deployment
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: status-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+images:
+  - name: ghcr.io/YOUR_USERNAME/status-page/gateway
+    newTag: staging
+  - name: ghcr.io/YOUR_USERNAME/status-page/auth
+    newTag: staging
+  - name: ghcr.io/YOUR_USERNAME/status-page/monitor
+    newTag: staging
+  - name: ghcr.io/YOUR_USERNAME/status-page/notify
+    newTag: staging
+  - name: ghcr.io/YOUR_USERNAME/status-page/dashboard
+    newTag: staging
+  - name: ghcr.io/YOUR_USERNAME/status-page/status
+    newTag: staging

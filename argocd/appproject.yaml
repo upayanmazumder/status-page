@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: status-page
+  namespace: argocd
+spec:
+  description: Status Page Platform
+  sourceRepos:
+    - "https://github.com/YOUR_USERNAME/status-page.git"
+  destinations:
+    - namespace: status-page
+      server: https://kubernetes.default.svc
+    - namespace: status-page-staging
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: ResourceQuota

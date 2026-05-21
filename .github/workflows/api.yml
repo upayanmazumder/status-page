@@ -1,9 +1,10 @@
-name: Build & Push API
+name: Build & Push API Services
 
 on:
   push:
     branches:
-      - "**"
+      - main
+      - develop
     paths:
       - "api/**"
       - ".github/workflows/api.yml"
@@ -14,9 +15,38 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push-api:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.changes.outputs.auth }}
+      monitor: ${{ steps.changes.outputs.monitor }}
+      notify: ${{ steps.changes.outputs.notify }}
+      dashboard: ${{ steps.changes.outputs.dashboard }}
+      status: ${{ steps.changes.outputs.status }}
+      gateway: ${{ steps.changes.outputs.gateway }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            auth:
+              - 'api/auth/**'
+            monitor:
+              - 'api/monitor/**'
+            notify:
+              - 'api/notify/**'
+            dashboard:
+              - 'api/dashboard/**'
+            status:
+              - 'api/status/**'
+            gateway:
+              - 'api/gateway/**'
 
+  build-auth:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.auth == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -25,24 +55,164 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine tags
-        id: tags
-        run: |
-          REPO_LOWER="${GITHUB_REPOSITORY,,}"
-          BRANCH_LOWER="${GITHUB_REF_NAME,,}"
-
-          if [ "$BRANCH_LOWER" = "main" ]; then
-            echo "TAGS=ghcr.io/$REPO_LOWER/api:latest,ghcr.io/$REPO_LOWER/api:$GITHUB_SHA" >> $GITHUB_OUTPUT
-          else
-            echo "TAGS=ghcr.io/$REPO_LOWER/api:$BRANCH_LOWER,ghcr.io/$REPO_LOWER/api:$GITHUB_SHA" >> $GITHUB_OUTPUT
-          fi
-
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/auth
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
       - uses: docker/build-push-action@v5
         with:
-          context: ./api
-          file: ./api/Dockerfile
+          context: ./api/auth
+          file: ./api/auth/Dockerfile
           push: true
-          tags: ${{ steps.tags.outputs.TAGS }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/api:latest
-          cache-to: type=inline
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-monitor:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.monitor == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/monitor
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./api/monitor
+          file: ./api/monitor/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-notify:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.notify == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/notify
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./api/notify
+          file: ./api/notify/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-dashboard:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.dashboard == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/dashboard
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./api/dashboard
+          file: ./api/dashboard/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-status:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.status == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/status
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./api/status
+          file: ./api/status/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-gateway:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.gateway == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/gateway
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./api/gateway
+          file: ./api/gateway/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

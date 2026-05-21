@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: status-page
+
+resources:
+  - ../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  - target:
+      kind: Deployment
+      name: status-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 5
+
+images:
+  - name: ghcr.io/YOUR_USERNAME/status-page/gateway
+    newTag: latest
+  - name: ghcr.io/YOUR_USERNAME/status-page/auth
+    newTag: latest
+  - name: ghcr.io/YOUR_USERNAME/status-page/monitor
+    newTag: latest
+  - name: ghcr.io/YOUR_USERNAME/status-page/notify
+    newTag: latest
+  - name: ghcr.io/YOUR_USERNAME/status-page/dashboard
+    newTag: latest
+  - name: ghcr.io/YOUR_USERNAME/status-page/status
+    newTag: latest
