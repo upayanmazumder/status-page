@@ -9,12 +9,14 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
+import redis.asyncio as redis
 
 from shared import (
     configure_logging,
     get_settings,
     DatabaseManager,
     get_async_session,
+    get_redis,
     setup_error_handlers,
     get_current_user,
     HealthCheck,
@@ -23,6 +25,7 @@ from shared import (
 )
 from shared.models import Subscriber, Incident, Maintenance
 from shared.logging import get_logger
+from app.webhook_retry import send_webhook_with_retry, start_retry_processor, WebhookDelivery
 
 configure_logging()
 logger = get_logger("notify_service")
@@ -38,6 +41,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include startup events
+from app.startup import startup_event
+app.add_event_handler("startup", startup_event)
 
 
 # Schemas
@@ -114,21 +121,25 @@ async def send_email(to_email: str, subject: str, body: str) -> bool:
         return True  # Pretend it worked for dev
 
 
-async def send_webhook(webhook_url: str, payload: WebhookPayload) -> bool:
-    """Send a webhook notification."""
+async def send_webhook(webhook_url: str, payload: WebhookPayload, redis_client: Optional[redis.Redis] = None) -> bool:
+    """Send a webhook notification with retry support."""
     logger.info("sending_webhook", url=webhook_url)
-
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                webhook_url,
-                json=payload.model_dump(),
-                headers={"Content-Type": "application/json"},
-            )
-            return response.status_code < 400
-    except Exception as e:
-        logger.error("webhook_send_failed", url=webhook_url, error=str(e))
-        return False
+    
+    if redis_client:
+        return await send_webhook_with_retry(redis_client, webhook_url, payload.model_dump())
+    else:
+        # Fallback to simple send without retry
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    webhook_url,
+                    json=payload.model_dump(),
+                    headers={"Content-Type": "application/json"},
+                )
+                return response.status_code < 400
+        except Exception as e:
+            logger.error("webhook_send_failed", url=webhook_url, error=str(e))
+            return False
 
 
 # Subscribers
@@ -260,6 +271,7 @@ async def notify_incident(
     background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     """Notify all incident subscribers about a new incident."""
     logger.info("notify_incident", project_id=project_id, incident_id=incident_id)
@@ -304,6 +316,7 @@ async def notify_incident(
                         "impact": incident.impact.value,
                     },
                 ),
+                redis_client=redis_client,
             )
 
     return {"message": f"Notified {len(subscribers)} subscribers"}
@@ -316,6 +329,7 @@ async def notify_maintenance(
     background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     """Notify all maintenance subscribers."""
     logger.info("notify_maintenance", project_id=project_id, maintenance_id=maintenance_id)
@@ -358,6 +372,7 @@ async def notify_maintenance(
                         "scheduled_end": maintenance.scheduled_end.isoformat(),
                     },
                 ),
+                redis_client=redis_client,
             )
 
     return {"message": f"Notified {len(subscribers)} subscribers"}
