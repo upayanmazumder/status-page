@@ -14,6 +14,7 @@ from shared import (
     get_settings,
     DatabaseManager,
     get_async_session,
+    get_redis,
     setup_error_handlers,
     get_current_user,
     require_org_access,
@@ -23,6 +24,8 @@ from shared import (
     PaginatedResponse,
     PaginationParams,
 )
+from shared.events import EventPublisher
+import redis.asyncio as redis
 from shared.models import (
     Component,
     ComponentGroup,
@@ -45,6 +48,10 @@ setup_error_handlers(app)
 # Include bulk operations router
 from app.bulk import router as bulk_router
 app.include_router(bulk_router)
+
+# Include search router
+from app.search import router as search_router
+app.include_router(search_router)
 
 settings = get_settings()
 app.add_middleware(
@@ -320,6 +327,7 @@ async def create_component(
     data: ComponentCreate,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("component_create", project_id=project_id, name=data.name)
 
@@ -334,6 +342,13 @@ async def create_component(
     db.add(component)
     await db.commit()
     await db.refresh(component)
+
+    # Publish event and invalidate cache
+    org_slug = user.get("org_id", "unknown")
+    await EventPublisher.publish_component_change(
+        redis_client, org_slug, project_id, str(component.id), "created",
+        {"name": component.name, "status": component.status.value}
+    )
 
     return ComponentResponse(
         id=str(component.id),
@@ -402,6 +417,7 @@ async def update_component(
     data: ComponentUpdate,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("component_update", component_id=component_id)
 
@@ -431,6 +447,14 @@ async def update_component(
     await db.commit()
     await db.refresh(component)
 
+    # Publish event and invalidate cache
+    org_slug = user.get("org_id", "unknown")
+    project_id = str(component.project_id)
+    await EventPublisher.publish_component_change(
+        redis_client, org_slug, project_id, component_id, "updated",
+        {"name": component.name, "status": component.status.value}
+    )
+
     return ComponentResponse(
         id=str(component.id),
         project_id=str(component.project_id),
@@ -449,6 +473,7 @@ async def delete_component(
     component_id: str,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("component_delete", component_id=component_id)
 
@@ -467,6 +492,13 @@ async def delete_component(
     component.deleted_at = datetime.now(timezone.utc)
     await db.commit()
 
+    # Publish event and invalidate cache
+    org_slug = user.get("org_id", "unknown")
+    project_id = str(component.project_id)
+    await EventPublisher.publish_component_change(
+        redis_client, org_slug, project_id, component_id, "deleted"
+    )
+
     return {"message": "Component deleted"}
 
 
@@ -477,6 +509,7 @@ async def create_incident(
     data: IncidentCreate,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("incident_create", project_id=project_id, title=data.title)
 
@@ -505,6 +538,13 @@ async def create_incident(
 
     await db.commit()
     await db.refresh(incident)
+
+    # Publish event and invalidate cache
+    org_slug = user.get("org_id", "unknown")
+    await EventPublisher.publish_incident_change(
+        redis_client, org_slug, project_id, str(incident.id), "created",
+        {"title": incident.title, "status": incident.status.value, "impact": incident.impact.value}
+    )
 
     return IncidentResponse(
         id=str(incident.id),
@@ -613,6 +653,7 @@ async def update_incident(
     data: IncidentUpdateCreate,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("incident_update", incident_id=incident_id)
 
@@ -640,6 +681,15 @@ async def update_incident(
 
     await db.commit()
     await db.refresh(incident)
+
+    # Publish event and invalidate cache
+    org_slug = user.get("org_id", "unknown")
+    project_id = str(incident.project_id)
+    action = "resolved" if data.status == IncidentStatus.resolved else "updated"
+    await EventPublisher.publish_incident_change(
+        redis_client, org_slug, project_id, incident_id, action,
+        {"title": incident.title, "status": incident.status.value, "message": data.message}
+    )
 
     return IncidentResponse(
         id=str(incident.id),
