@@ -48,6 +48,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include startup events
+from app.startup import startup_event
+app.add_event_handler("startup", startup_event)
+
 
 # Schemas
 class CheckConfigCreate(BaseModel):
@@ -373,48 +377,21 @@ async def get_check_history(
     ]
 
 
-# Background check runner
-async def run_scheduled_checks():
-    """Background task to run enabled checks on their schedule."""
-    logger.info("scheduled_check_runner_started")
-    db = DatabaseManager().session_factory()
+# Scheduler
+from app.scheduler import start_scheduler, MonitorTaskScheduler
 
+
+# Background check runner - replaced by scheduler
+async def run_scheduled_checks_legacy():
+    """Legacy background task - now delegates to scheduler."""
+    logger.info("scheduled_check_runner_started")
+    db_manager = DatabaseManager()
+    
     try:
         while True:
-            now = datetime.now(timezone.utc)
-
-            # Get all enabled checks that are due
-            result = await db.execute(
-                select(UptimeCheck)
-                .where(
-                    UptimeCheck.enabled.is_(True),
-                    UptimeCheck.deleted_at.is_(None),
-                )
-            )
-            checks = result.scalars().all()
-
-            for check in checks:
-                # Check if due (simplified - in production use a scheduler)
-                result_data = await execute_check(check)
-
-                history = CheckHistory(
-                    id=uuid.UUID(result_data.id),
-                    check_id=check.id,
-                    component_id=check.component_id,
-                    region=result_data.region,
-                    result=CheckResult(result_data.result),
-                    status_code=result_data.status_code,
-                    response_time_ms=result_data.response_time_ms,
-                    error_message=result_data.error_message,
-                    checked_at=result_data.checked_at,
-                )
-                db.add(history)
-
-            await db.commit()
-
-            # Run every 30 seconds
+            async with db_manager.session_factory() as db:
+                from app.scheduler import run_scheduled_checks
+                await run_scheduled_checks(db)
             await asyncio.sleep(30)
     except Exception as e:
         logger.error("scheduled_check_runner_error", error=str(e))
-    finally:
-        await db.close()
