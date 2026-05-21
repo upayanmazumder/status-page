@@ -83,6 +83,28 @@ class ComponentResponse(BaseModel):
         from_attributes = True
 
 
+class ComponentGroupCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    position: int = 0
+
+
+class ComponentGroupUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    position: Optional[int] = None
+
+
+class ComponentGroupResponse(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    position: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class IncidentCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     status: IncidentStatus = IncidentStatus.investigating
@@ -93,6 +115,33 @@ class IncidentCreate(BaseModel):
 class IncidentUpdateCreate(BaseModel):
     message: str = Field(..., min_length=1)
     status: IncidentStatus
+
+
+class IncidentUpdateResponse(BaseModel):
+    id: str
+    incident_id: str
+    message: str
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class IncidentDetailResponse(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    status: str
+    impact: str
+    resolved_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    component_ids: List[str] = []
+    updates: List[IncidentUpdateResponse] = []
+
+    class Config:
+        from_attributes = True
 
 
 class IncidentResponse(BaseModel):
@@ -137,6 +186,129 @@ async def health_check():
     return HealthCheck(status="ok", service="dashboard")
 
 
+# Component Groups
+@app.post("/groups", response_model=ComponentGroupResponse)
+async def create_group(
+    project_id: str,
+    data: ComponentGroupCreate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("group_create", project_id=project_id, name=data.name)
+
+    group = ComponentGroup(
+        id=uuid.uuid4(),
+        project_id=uuid.UUID(project_id),
+        name=data.name,
+        position=data.position,
+    )
+    db.add(group)
+    await db.commit()
+    await db.refresh(group)
+
+    return ComponentGroupResponse(
+        id=str(group.id),
+        project_id=str(group.project_id),
+        name=group.name,
+        position=group.position,
+        created_at=group.created_at,
+        updated_at=group.updated_at,
+    )
+
+
+@app.get("/groups")
+async def get_groups(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    result = await db.execute(
+        select(ComponentGroup)
+        .where(
+            ComponentGroup.project_id == uuid.UUID(project_id),
+            ComponentGroup.deleted_at.is_(None),
+        )
+        .order_by(ComponentGroup.position)
+    )
+    groups = result.scalars().all()
+
+    return [
+        ComponentGroupResponse(
+            id=str(g.id),
+            project_id=str(g.project_id),
+            name=g.name,
+            position=g.position,
+            created_at=g.created_at,
+            updated_at=g.updated_at,
+        )
+        for g in groups
+    ]
+
+
+@app.patch("/groups/{group_id}", response_model=ComponentGroupResponse)
+async def update_group(
+    group_id: str,
+    data: ComponentGroupUpdate,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("group_update", group_id=group_id)
+
+    result = await db.execute(
+        select(ComponentGroup).where(
+            ComponentGroup.id == uuid.UUID(group_id),
+            ComponentGroup.deleted_at.is_(None),
+        )
+    )
+    group = result.scalar_one_or_none()
+
+    if not group:
+        raise NotFoundError("Component group not found")
+
+    if data.name is not None:
+        group.name = data.name
+    if data.position is not None:
+        group.position = data.position
+
+    await db.commit()
+    await db.refresh(group)
+
+    return ComponentGroupResponse(
+        id=str(group.id),
+        project_id=str(group.project_id),
+        name=group.name,
+        position=group.position,
+        created_at=group.created_at,
+        updated_at=group.updated_at,
+    )
+
+
+@app.delete("/groups/{group_id}")
+async def delete_group(
+    group_id: str,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    logger.info("group_delete", group_id=group_id)
+
+    result = await db.execute(
+        select(ComponentGroup).where(
+            ComponentGroup.id == uuid.UUID(group_id),
+            ComponentGroup.deleted_at.is_(None),
+        )
+    )
+    group = result.scalar_one_or_none()
+
+    if not group:
+        raise NotFoundError("Component group not found")
+
+    # Soft delete
+    group.deleted_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    return {"message": "Component group deleted"}
+
+
 # Components
 @app.post("/components", response_model=ComponentResponse)
 async def create_component(
@@ -175,29 +347,26 @@ async def create_component(
 @app.get("/components")
 async def get_components(
     project_id: str,
+    group_id: Optional[str] = None,
     pagination: PaginationParams = Depends(),
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    # Get total count
-    total_result = await db.execute(
-        select(func.count())
-        .select_from(Component)
-        .where(
-            Component.project_id == uuid.UUID(project_id),
-            Component.deleted_at.is_(None),
-        )
+    query = select(Component).where(
+        Component.project_id == uuid.UUID(project_id),
+        Component.deleted_at.is_(None),
     )
+
+    if group_id:
+        query = query.where(Component.group_id == uuid.UUID(group_id))
+
+    # Get total count
+    total_result = await db.execute(select(func.count()).select_from(query.subquery()))
     total = total_result.scalar()
 
     # Get paginated results
     result = await db.execute(
-        select(Component)
-        .where(
-            Component.project_id == uuid.UUID(project_id),
-            Component.deleted_at.is_(None),
-        )
-        .order_by(Component.position)
+        query.order_by(Component.position)
         .offset(pagination.offset)
         .limit(pagination.limit)
     )
@@ -388,6 +557,49 @@ async def get_incidents(
 
     return PaginatedResponse.create(
         items=items, total=total, page=pagination.page, limit=pagination.limit
+    )
+
+
+@app.get("/incidents/{incident_id}", response_model=IncidentDetailResponse)
+async def get_incident_detail(
+    incident_id: str,
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Get incident with full timeline."""
+    logger.info("incident_detail", incident_id=incident_id)
+
+    result = await db.execute(
+        select(Incident).where(Incident.id == uuid.UUID(incident_id))
+    )
+    incident = result.scalar_one_or_none()
+
+    if not incident:
+        raise NotFoundError("Incident not found")
+
+    # Fetch updates
+    updates = [
+        IncidentUpdateResponse(
+            id=str(u.id),
+            incident_id=str(u.incident_id),
+            message=u.message,
+            status=u.status.value,
+            created_at=u.created_at,
+        )
+        for u in incident.updates
+    ]
+
+    return IncidentDetailResponse(
+        id=str(incident.id),
+        project_id=str(incident.project_id),
+        title=incident.title,
+        status=incident.status.value,
+        impact=incident.impact.value,
+        resolved_at=incident.resolved_at,
+        created_at=incident.created_at,
+        updated_at=incident.updated_at,
+        component_ids=[str(c.id) for c in incident.components],
+        updates=updates,
     )
 
 
