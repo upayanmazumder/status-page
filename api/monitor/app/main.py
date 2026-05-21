@@ -31,6 +31,7 @@ from shared.models import (
     CheckHistory,
 )
 from shared.logging import get_logger
+from shared.metrics import setup_metrics
 import redis.asyncio as redis
 
 configure_logging()
@@ -38,6 +39,7 @@ logger = get_logger("monitor_service")
 
 app = FastAPI(title="Monitor Service", version="1.0.0")
 setup_error_handlers(app)
+setup_metrics(app, "monitor", "1.0.0")
 
 settings = get_settings()
 app.add_middleware(

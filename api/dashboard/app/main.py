@@ -43,12 +43,14 @@ from shared.models import (
     MaintenanceStatus,
 )
 from shared.logging import get_logger
+from shared.metrics import setup_metrics
 
 configure_logging()
 logger = get_logger("dashboard_service")
 
 app = FastAPI(title="Dashboard Service", version="1.0.0")
 setup_error_handlers(app)
+setup_metrics(app, "dashboard", "1.0.0")
 
 # Include bulk operations router
 from app.bulk import router as bulk_router
@@ -61,6 +63,10 @@ app.include_router(search_router)
 # Include audit log router
 from app.main_audit import router as audit_router
 app.include_router(audit_router)
+
+# Include maintenance router
+from app.main_maintenance import router as maintenance_router
+app.include_router(maintenance_router)
 
 settings = get_settings()
 app.add_middleware(
@@ -187,6 +193,15 @@ class MaintenanceCreate(BaseModel):
     component_ids: List[str] = []
 
 
+class MaintenanceUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=500)
+    description: Optional[str] = None
+    scheduled_start: Optional[datetime] = None
+    scheduled_end: Optional[datetime] = None
+    component_ids: Optional[List[str]] = None
+    status: Optional[MaintenanceStatus] = None
+
+
 class MaintenanceResponse(BaseModel):
     id: str
     project_id: str
@@ -195,6 +210,22 @@ class MaintenanceResponse(BaseModel):
     scheduled_start: datetime
     scheduled_end: datetime
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class MaintenanceDetailResponse(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    description: Optional[str]
+    status: str
+    scheduled_start: datetime
+    scheduled_end: datetime
+    created_at: datetime
+    updated_at: datetime
+    component_ids: List[str] = []
 
     class Config:
         from_attributes = True
@@ -785,6 +816,7 @@ async def create_maintenance(
     data: MaintenanceCreate,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
+    redis_client: redis.Redis = Depends(get_redis),
 ):
     logger.info("maintenance_create", project_id=project_id, title=data.title)
 
@@ -814,6 +846,26 @@ async def create_maintenance(
     db.add(maintenance)
     await db.commit()
     await db.refresh(maintenance)
+
+    # Audit log
+    audit = AuditLog(
+        org_id=maintenance.org_id,
+        actor_id=user.get("id"),
+        action="maintenance.created",
+        entity_type="maintenance",
+        entity_id=maintenance.id,
+        changes={"title": maintenance.title, "status": maintenance.status.value},
+        meta={"project_id": str(project_id)},
+    )
+    db.add(audit)
+    await db.commit()
+
+    # Publish event
+    org_slug = user.get("org_id", "unknown")
+    await EventPublisher.publish_maintenance_change(
+        redis_client, org_slug, project_id, str(maintenance.id), "scheduled",
+        {"title": maintenance.title, "status": maintenance.status.value}
+    )
 
     return MaintenanceResponse(
         id=str(maintenance.id),

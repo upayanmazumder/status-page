@@ -20,13 +20,16 @@ from shared import (
     get_redis,
 )
 from shared.logging import get_logger
+from shared.metrics import setup_metrics
 import redis.asyncio as redis
+from app.circuit_breaker import registry as circuit_registry
 
 configure_logging()
 logger = get_logger("gateway")
 
 app = FastAPI(title="API Gateway", version="1.0.0")
 setup_error_handlers(app)
+setup_metrics(app, "gateway", "1.0.0")
 
 settings = get_settings()
 security = HTTPBearer(auto_error=False)
@@ -196,6 +199,12 @@ async def proxy_request(
         if "role" in user:
             headers["X-User-Role"] = user["role"]
 
+    # Circuit breaker check
+    cb = circuit_registry.get(service_name)
+    if not cb.can_execute():
+        logger.warning("circuit_breaker_open_rejecting", service=service_name)
+        raise HTTPException(status_code=503, detail=f"Service {service_name} temporarily unavailable (circuit breaker open)")
+
     try:
         body = await request.body() if method in ["POST", "PUT", "PATCH"] else None
 
@@ -211,6 +220,11 @@ async def proxy_request(
             if stream:
                 # For SSE, stream the response
                 response = await client.send(req, stream=True)
+                # Record success for non-error status codes
+                if response.status_code < 500:
+                    cb.record_success()
+                else:
+                    cb.record_failure()
                 return StreamingResponse(
                     response.aiter_text(),
                     status_code=response.status_code,
@@ -223,6 +237,11 @@ async def proxy_request(
                 )
             else:
                 response = await client.send(req)
+                # Record success for non-error status codes
+                if response.status_code < 500:
+                    cb.record_success()
+                else:
+                    cb.record_failure()
                 content = response.json() if response.headers.get("content-type", "").startswith("application/json") else response.text
                 return JSONResponse(
                     content=content,
@@ -230,6 +249,7 @@ async def proxy_request(
                     headers=dict(response.headers),
                 )
     except httpx.RequestError as e:
+        cb.record_failure()
         logger.error("proxy_request_failed", service=service_name, error=str(e))
         raise HTTPException(status_code=503, detail=f"Service {service_name} unavailable")
 
@@ -280,3 +300,10 @@ async def status_proxy(path: str, request: Request, user: Optional[dict] = Depen
 @app.get("/events/{path:path}")
 async def events_proxy(path: str, request: Request):
     return await proxy_request("status", f"/events/{path}", request, stream=True)
+
+
+# Circuit breaker status
+@app.get("/circuit-breakers")
+async def circuit_breaker_status():
+    """Get circuit breaker status for all services."""
+    return circuit_registry.get_state()

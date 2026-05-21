@@ -103,14 +103,18 @@ class EventPublisher:
         org_slug: str,
         project_slug: str,
         maintenance_id: str,
-        action: str,  # scheduled, started, completed
+        action: str,  # scheduled, started, completed, cancelled, updated, deleted
+        data: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Publish maintenance change event and invalidate cache."""
         channel = f"events:{org_slug}:{project_slug}"
+        payload = {"maintenance_id": maintenance_id}
+        if data:
+            payload["data"] = data
         await EventPublisher.publish(
             redis_client,
             channel,
             f"maintenance.{action}",
-            {"maintenance_id": maintenance_id},
+            payload,
         )
         await EventPublisher.invalidate_status_cache(redis_client, org_slug, project_slug)
