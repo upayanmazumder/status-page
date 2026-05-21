@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: status-page-metrics
+  namespace: status-page
+  labels:
+    app: status-page
+spec:
+  selector:
+    matchLabels:
+      metrics: enabled
+  namespaceSelector:
+    matchNames:
+      - status-page
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

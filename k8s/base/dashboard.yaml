@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: dashboard-service
+        metrics: enabled
     spec:
       containers:
         - name: dashboard

@@ -102,6 +102,37 @@ async def health_check():
     return HealthCheck(status="ok", service="monitor")
 
 
+@app.get("/health/detailed")
+async def health_check_detailed(db: AsyncSession = Depends(get_async_session)):
+    """Detailed health check including scheduler and check counts."""
+    from app.scheduler import _last_check_times
+    
+    # Count active checks
+    result = await db.execute(
+        select(func.count()).select_from(UptimeCheck)
+        .where(
+            UptimeCheck.enabled.is_(True),
+            UptimeCheck.deleted_at.is_(None),
+        )
+    )
+    active_checks = result.scalar()
+    
+    # Count total history entries
+    result = await db.execute(
+        select(func.count()).select_from(CheckHistory)
+    )
+    total_history = result.scalar()
+    
+    return {
+        "status": "ok",
+        "service": "monitor",
+        "scheduler": "running",
+        "active_checks": active_checks,
+        "total_history_entries": total_history,
+        "last_check_times_count": len(_last_check_times),
+    }
+
+
 async def execute_http_check(check: UptimeCheck) -> CheckResultResponse:
     """Execute an HTTP health check."""
     start = datetime.now(timezone.utc)

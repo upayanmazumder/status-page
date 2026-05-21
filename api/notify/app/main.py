@@ -92,6 +92,24 @@ async def health_check():
     return HealthCheck(status="ok", service="notify")
 
 
+@app.get("/health/detailed")
+async def health_check_detailed(redis_client: redis.Redis = Depends(get_redis)):
+    """Detailed health check including background processor status."""
+    # Check retry queue size
+    queue_size = 0
+    try:
+        queue_size = await redis_client.zcard("webhook:retry:queue")
+    except Exception:
+        pass
+    
+    return {
+        "status": "ok",
+        "service": "notify",
+        "webhook_retry_processor": "running",
+        "retry_queue_size": queue_size,
+    }
+
+
 # Email sending (simplified - in production use a proper email service)
 async def send_email(to_email: str, subject: str, body: str) -> bool:
     """Send an email notification."""

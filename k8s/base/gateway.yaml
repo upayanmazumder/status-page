@@ -19,6 +19,7 @@ spec:
     metadata:
       labels:
         app: gateway
+        metrics: enabled
     spec:
       containers:
         - name: gateway

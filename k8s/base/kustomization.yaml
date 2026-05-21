@@ -14,3 +14,4 @@ resources:
   - dashboard.yaml
   - status.yaml
   - ingress.yaml
+  - servicemonitor.yaml

@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: monitor-service
+        metrics: enabled
     spec:
       containers:
         - name: monitor
